@@ -204,7 +204,7 @@ func (v *Vault) DeleteEntry(entryPath string) error {
 	return nil
 }
 
-// FindEntries searches entry titles with exact or case-insensitive substring matching.
+// FindEntries searches entry titles and paths with exact or case-insensitive substring matching.
 func (v *Vault) FindEntries(query string, exact bool) []EntryRecord {
 	lowered := strings.ToLower(query)
 	results := make([]EntryRecord, 0)
@@ -214,11 +214,12 @@ func (v *Vault) FindEntries(query string, exact bool) []EntryRecord {
 		for i := range group.Entries {
 			entry := &group.Entries[i]
 			title := entry.GetTitle()
+			path := joinGroupPath(groupPath, title)
 			match := false
 			if exact {
-				match = strings.EqualFold(title, query)
+				match = strings.EqualFold(title, query) || strings.EqualFold(path, query)
 			} else {
-				match = strings.Contains(strings.ToLower(title), lowered)
+				match = strings.Contains(strings.ToLower(title), lowered) || strings.Contains(strings.ToLower(path), lowered)
 			}
 			if match {
 				results = append(results, entryRecord(groupPath, entry))

@@ -11,7 +11,7 @@ func init() {
 
 	findCmd := &cobra.Command{
 		Use:   "find [database] <query>",
-		Short: "Search entries by title",
+		Short: "Search entries by title or path",
 		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, remaining, err := resolveDatabasePath(args, 1)
@@ -44,6 +44,6 @@ func init() {
 		},
 	}
 
-	findCmd.Flags().BoolVar(&exact, "exact", false, "Match the title exactly instead of substring matching")
+	findCmd.Flags().BoolVar(&exact, "exact", false, "Match the full title or path exactly instead of substring matching")
 	rootCmd.AddCommand(findCmd)
 }

@@ -71,6 +71,10 @@ func TestCLIFlow(t *testing.T) {
 	result.requireSuccess(t)
 	result.requireStdoutContains(t, "/Personal/GitHub")
 
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "find", dbPath, "personal")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "/Personal/GitHub")
+
 	result = runKPX(
 		t,
 		tempDir,
@@ -146,6 +150,10 @@ func TestDefaultDatabaseConfig(t *testing.T) {
 	result.requireStdoutContains(t, "Password: super-secret")
 
 	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "find", "git")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "/Personal/GitHub")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "find", "personal")
 	result.requireSuccess(t)
 	result.requireStdoutContains(t, "/Personal/GitHub")
 
