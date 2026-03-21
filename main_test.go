@@ -236,6 +236,65 @@ func TestMasterPasswordCacheUsesConfiguredSeconds(t *testing.T) {
 	result.requireStdoutContains(t, "/Personal")
 }
 
+func TestMasterPasswordCacheWorksAcrossCommands(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+	exportPath := filepath.Join(tempDir, "paper.txt")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin", "--name", "Test Vault").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+	runKPX(
+		t,
+		tempDir,
+		"hunter2\n",
+		"--master-password-stdin",
+		"entry",
+		"add",
+		dbPath,
+		"/Personal/GitHub",
+		"--username",
+		"alice",
+		"--password",
+		"super-secret",
+	).requireSuccess(t)
+
+	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
+		t.Fatalf("os.MkdirAll() failed: %v", err)
+	}
+	if err := os.WriteFile(configPath, []byte("master_password_cache_seconds: 60\n"), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() failed: %v", err)
+	}
+
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "validate", dbPath).requireSuccess(t)
+
+	for _, args := range [][]string{
+		{"--no-input", "db", "validate", dbPath},
+		{"--no-input", "group", "ls", dbPath},
+		{"--no-input", "group", "add", dbPath, "/Work"},
+		{"--no-input", "entry", "ls", dbPath, "/Personal"},
+		{"--no-input", "entry", "show", dbPath, "/Personal/GitHub"},
+		{"--no-input", "find", dbPath, "GitHub"},
+		{"--no-input", "entry", "add", dbPath, "/Personal/GitLab", "--username", "alice", "--password", "another-secret"},
+		{"--no-input", "entry", "edit", dbPath, "/Personal/GitHub", "--notes", "Cached update"},
+		{"--no-input", "entry", "rm", dbPath, "/Personal/GitLab", "--force"},
+		{"--no-input", "export", "paper", dbPath, "--output", exportPath, "--force"},
+	} {
+		result := runKPX(t, tempDir, "", args...)
+		result.requireSuccess(t)
+	}
+
+	data, err := os.ReadFile(exportPath)
+	if err != nil {
+		t.Fatalf("os.ReadFile() failed: %v", err)
+	}
+	if !strings.Contains(string(data), "Password: super-secret") {
+		t.Fatalf("paper export did not contain expected secret:\n%s", string(data))
+	}
+}
+
 func TestSaveCreatesBackupWithDefaultFormat(t *testing.T) {
 	t.Parallel()
 

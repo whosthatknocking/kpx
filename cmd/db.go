@@ -72,16 +72,7 @@ func init() {
 				return err
 			}
 
-			password, err := cli.ReadSecret(cli.SecretOptions{
-				Label:     "Master password",
-				NoInput:   opts.NoInput,
-				FromStdin: opts.MasterPasswordStdin,
-			})
-			if err != nil {
-				return err
-			}
-
-			v, err := vault.Open(path, password)
+			v, err := openVaultForRead(path)
 			if err != nil {
 				return err
 			}
