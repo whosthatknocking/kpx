@@ -139,7 +139,7 @@ default_database: /Users/you/vault.kdbx
 reveal: false
 master_password_cache_seconds: 0
 backup_directory: ""
-backup_filename_format: "{db_stem}.{timestamp}.{db_ext}"
+backup_filename_format: "{db_filename}.{timestamp}.{db_ext}"
 save_method: "temporary_file"
 ```
 
@@ -151,7 +151,7 @@ Leave `backup_directory` empty to store backups alongside the database. The defa
 
 Available backup filename placeholders:
 
-- `{db_filename}`
+- `{db_filename}`: database filename without the extension
 - `{db_stem}`
 - `{db_ext}`
 - `{timestamp}`

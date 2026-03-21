@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const defaultBackupFilenameFormat = "{db_stem}.{timestamp}.{db_ext}"
+const defaultBackupFilenameFormat = "{db_filename}.{timestamp}.{db_ext}"
 
 // BackupFile copies the current database to a timestamped backup before save.
 func BackupFile(path string, opts BackupOptions) error {
@@ -83,10 +83,11 @@ func renderBackupFilename(path string, format string, now time.Time) string {
 		format = defaultBackupFilenameFormat
 	}
 
-	dbFilename := filepath.Base(path)
-	dbExtWithDot := filepath.Ext(dbFilename)
+	baseName := filepath.Base(path)
+	dbExtWithDot := filepath.Ext(baseName)
 	dbExt := strings.TrimPrefix(dbExtWithDot, ".")
-	dbStem := strings.TrimSuffix(dbFilename, dbExtWithDot)
+	dbFilename := strings.TrimSuffix(baseName, dbExtWithDot)
+	dbStem := dbFilename
 	timestamp := now.UTC().Format("20060102T150405.000000000Z")
 
 	replacer := strings.NewReplacer(

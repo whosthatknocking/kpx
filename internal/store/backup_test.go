@@ -59,3 +59,14 @@ func TestBackupFileUsesCustomDestinationAndFormat(t *testing.T) {
 		t.Fatalf("backup content = %q, want %q", string(data), "vault-data")
 	}
 }
+
+func TestRenderBackupFilenameUsesExtensionlessDatabaseFilename(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 3, 21, 12, 34, 56, 0, time.UTC)
+	got := renderBackupFilename("/tmp/vault.kdbx", "{db_filename}.{timestamp}.{db_ext}", now)
+	want := "vault.20260321T123456.000000000Z.kdbx"
+	if got != want {
+		t.Fatalf("renderBackupFilename() = %q, want %q", got, want)
+	}
+}
