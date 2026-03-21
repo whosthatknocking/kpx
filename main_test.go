@@ -359,6 +359,14 @@ func TestVersionFlag(t *testing.T) {
 	result.requireStdoutContains(t, "kpx "+buildinfo.String())
 }
 
+func TestBaseVersionIsEmbedded(t *testing.T) {
+	t.Parallel()
+
+	if got := buildinfo.BaseVersion(); got != "0.1.5" {
+		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.5")
+	}
+}
+
 func TestHelperProcess(_ *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return

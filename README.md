@@ -83,13 +83,13 @@ Build the CLI binary:
 go build -o kpx .
 ```
 
-To embed a release version in the binary:
+The base release version is stored in [VERSION.txt](/Users/emt/Workspace/kpxc/internal/buildinfo/VERSION.txt). Update that file when you cut a new release.
+
+Builds always take the base version from that file. When VCS metadata is available, `kpx` also appends commit/build details automatically.
 
 ```bash
-go build -ldflags "-X github.com/whosthatknocking/kpx/internal/buildinfo.Version=v0.1.0" -o kpx .
+go build -o kpx .
 ```
-
-Without an injected release version, `kpx` uses Go build metadata to report the current VCS revision when available.
 
 ## Quick Start
 

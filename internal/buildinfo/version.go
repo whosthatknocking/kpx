@@ -1,15 +1,18 @@
 package buildinfo
 
 import (
+	_ "embed"
 	"fmt"
 	"runtime/debug"
 	"strings"
 )
 
+//go:embed VERSION.txt
+var embeddedVersion string
+
 var (
-	Version = "dev"
-	Commit  = ""
-	Date    = ""
+	Commit = ""
+	Date   = ""
 )
 
 func String() string {
@@ -38,10 +41,7 @@ func String() string {
 }
 
 func current() (base string, commit string, date string, modified bool) {
-	base = Version
-	if base == "" {
-		base = "dev"
-	}
+	base = BaseVersion()
 
 	commit = Commit
 	date = Date
@@ -68,11 +68,18 @@ func current() (base string, commit string, date string, modified bool) {
 	if Commit != "" {
 		commit = shortRevision(Commit)
 	}
+	if base == "" {
+		base = "dev"
+	}
 	if base == "dev" && commit != "" {
 		base = "dev+" + commit
 	}
 
 	return base, commit, date, modified
+}
+
+func BaseVersion() string {
+	return strings.TrimSpace(embeddedVersion)
 }
 
 func shortRevision(value string) string {
