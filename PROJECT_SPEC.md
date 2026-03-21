@@ -27,12 +27,15 @@ Current repo status as of March 21, 2026:
 - [x] Initial project spec written
 - [x] Initial commit created and pushed
 - [x] Dedicated `mvp` branch created
+- [x] `mvp` merged into `main`
 - [x] Go module initialized
 - [x] CLI project skeleton created
 - [x] KDBX integration started
 - [x] Core CLI and vault code split into smaller files by concern
 - [x] Automated test suite currently passes with `go test ./...`
-- [ ] Current Go implementation committed to Git on `mvp`
+- [x] Current Go implementation committed to Git
+- [x] MIT license added
+- [x] README prepared for GitHub publication
 
 Current product status in the workspace:
 
@@ -54,6 +57,9 @@ Current product status in the workspace:
 - [x] optional master password cache duration in `~/.kpx/config.yml`
 - [x] database backup before save with configurable destination and filename format
 - [x] configurable save method with temporary-file writes as the default
+- [x] centralized release version source in `internal/buildinfo/VERSION.txt`
+- [x] official on-demand KeePassXC fixtures pinned to upstream commit and SHA-256
+- [x] advisory file locking for cooperating `kpx` processes
 - [x] secure password prompt support
 - [ ] JSON output
 - [ ] key file support
@@ -71,10 +77,10 @@ Current product status in the workspace:
 
 ### Product goals
 
-- [ ] Fast startup and low operational complexity.
+- [x] Fast startup and low operational complexity.
 - [x] Human-friendly interactive use.
 - [ ] Stable machine-readable output modes for scripting.
-- [ ] Minimal external dependencies unless they clearly reduce complexity and risk.
+- [x] Minimal external dependencies unless they clearly reduce complexity and risk.
 
 ## 3. Scope Levels
 
@@ -277,6 +283,7 @@ Supported:
 - commands that open an existing vault may omit the database path when `default_database` is configured
 - explicit command-line database arguments override config
 - explicit CLI `--reveal` overrides config
+- config management is file-based only; there are no `kpx config ...` subcommands
 
 ### 7.9 Example workflows
 
@@ -322,6 +329,9 @@ kpx entry edit ~/vault.kdbx /Personal/GitHub --url https://github.com/login
 - [x] title search
 - [x] atomic saves
 - [x] KeePassXC compatibility validation tests
+- [x] backup before save
+- [x] optional default database config
+- [x] version command and build version metadata
 
 ### Phase 2: Strongly desired for v1.0
 
@@ -533,18 +543,16 @@ Database selection should support:
   - flag parsing helpers, prompt helpers, output formatting
 - `internal/config/`
   - optional user config loading and saving
-- `internal/app/`
-  - use-case layer for commands
-- `internal/kdbx/`
-  - thin wrapper around the chosen KDBX library
-- `internal/model/`
-  - app-facing group/entry abstractions
+- `internal/buildinfo/`
+  - embedded version metadata exposed to the CLI
+- `internal/cache/`
+  - optional master password cache handling
 - `internal/store/`
   - file IO, atomic writes, lock handling
-- `internal/output/`
-  - table/text renderers, with optional JSON in v1
 - `internal/testcompat/`
   - compatibility fixtures and round-trip tests
+- `internal/vault/`
+  - KDBX-backed vault adapter and path-based operations
 
 ### 13.2 Design principles
 
@@ -642,6 +650,7 @@ Required compatibility checks:
 - open fixture successfully
 - verify expected metadata and entry content
 - save without losing fields
+- support official on-demand upstream fixtures pinned by commit and checksum
 - reopen in KeePassXC manually or through compatibility validation workflow
 
 ### 16.3 Round-trip tests
@@ -669,7 +678,7 @@ All of the following must be true for the first usable release:
 - [x] supports atomic save behavior
 - [x] supports master-password-based unlock
 - [x] test suite passes on macOS
-- [ ] documentation includes quickstart and threat notes
+- [x] documentation includes quickstart and threat notes
 
 ### v1 release criteria
 
@@ -688,7 +697,6 @@ Required docs:
 - compatibility notes with KeePassXC
 - optional config file behavior and default database workflow
 - version command and release-version build notes
-- migration notes for existing KeePassXC users
 - command reference
 
 ## 19. Risks and Mitigations
@@ -735,23 +743,23 @@ For CLI behavior:
 
 ### Milestone 1: Foundation
 
-- [ ] project skeleton
-- [ ] command layout
-- [ ] database open/save adapter
-- [ ] password prompt flow
-- [ ] fixture loading tests
+- [x] project skeleton
+- [x] command layout
+- [x] database open/save adapter
+- [x] password prompt flow
+- [x] fixture loading tests
 
 ### Milestone 2: Core Vault Ops
 
-- group list/create
-- entry CRUD
-- title search
+- [x] group list/create
+- [x] entry CRUD
+- [x] title search
 
 ### Milestone 3: v1 Expansion
 
-- key file support
-- group rename/move/delete
-- JSON output
+- [ ] key file support
+- [ ] group rename/move/delete
+- [ ] JSON output
 
 ### Milestone 4: Post-v1 Features
 
@@ -760,10 +768,10 @@ For CLI behavior:
 
 ### Milestone 5: Hardening
 
-- atomic saves
-- locking
-- compatibility matrix
-- docs and release packaging
+- [x] atomic saves
+- [x] locking
+- [x] compatibility matrix
+- [x] docs and release packaging
 
 ### Milestone 6: Portability
 

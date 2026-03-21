@@ -10,6 +10,12 @@ It aims to be small, scriptable, and easy to audit:
 - safe atomic saves
 - secrets redacted by default
 
+## Status
+
+`kpx` is usable today for password-only `KDBX4` workflows.
+
+Current release: `v0.1.6`
+
 ## Overview
 
 `kpx` is intentionally narrower than a full KeePass desktop replacement. The goal is a dependable command-line tool for people who want to:
@@ -35,6 +41,8 @@ Implemented today:
 - atomic save behavior
 - a refactored package layout with smaller command and vault files
 - round-trip and fixture-based test coverage
+- official on-demand KeePassXC compatibility fixtures
+- advisory locking for cooperating `kpx` processes during reads and writes
 
 ## Install
 
@@ -58,7 +66,13 @@ cd kpx
 go build -o kpx .
 ```
 
-The base release version is stored in [VERSION.txt](/Users/emt/Workspace/kpxc/internal/buildinfo/VERSION.txt). Builds always take the base version from that file, and append VCS metadata automatically when available.
+Requirements:
+
+- Go `1.25` or newer for source builds
+- macOS is the primary supported platform today
+- Unix-style advisory locking is used for cooperating `kpx` processes
+
+The base release version is stored in [`internal/buildinfo/VERSION.txt`](./internal/buildinfo/VERSION.txt). Builds always take the base version from that file, and append VCS metadata automatically when available.
 
 ## Quick Start
 
@@ -190,6 +204,13 @@ Path rules:
 - writes are atomic
 - destructive entry deletion requires confirmation unless `--force` is provided
 
+Current limitations:
+
+- key files are not supported yet
+- JSON output is not supported yet
+- advisory locks coordinate cooperating `kpx` processes, not every external KeePass tool
+- `direct_write` is available for compatibility, but `temporary_file` remains the safer default
+
 ## Roadmap
 
 Planned next:
@@ -228,13 +249,13 @@ Development information starts here so the sections above stay focused on end us
 Run the test suite:
 
 ```bash
-go test ./...
+GOCACHE=/tmp/gocache go test ./...
 ```
 
 Run additional static analysis:
 
 ```bash
-go vet ./...
+GOCACHE=/tmp/gocache go vet ./...
 ```
 
 Project layout:
@@ -248,6 +269,8 @@ internal/store/     atomic file writes
 internal/testcompat/fixture-driven compatibility tests
 internal/vault/     KDBX-backed vault adapter
 ```
+
+Additional project docs:
 
 ## Non-Goals
 
@@ -264,4 +287,4 @@ Out of scope for the early versions:
 
 ## License
 
-MIT. See [LICENSE](/Users/emt/Workspace/kpxc/LICENSE).
+MIT. See [LICENSE](./LICENSE).
