@@ -158,6 +158,56 @@ func TestDefaultDatabaseConfig(t *testing.T) {
 	result.requireStderrContains(t, "database path not provided and no default database configured")
 }
 
+func TestEntryShowUsesRevealConfigUnlessFlagOverrides(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+	runKPX(
+		t,
+		tempDir,
+		"hunter2\n",
+		"--master-password-stdin",
+		"entry",
+		"add",
+		dbPath,
+		"/Personal/GitHub",
+		"--password",
+		"super-secret",
+	).requireSuccess(t)
+
+	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
+		t.Fatalf("os.MkdirAll() failed: %v", err)
+	}
+	if err := os.WriteFile(configPath, []byte("default_database: "+dbPath+"\nreveal: true\n"), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() failed: %v", err)
+	}
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "show", "/Personal/GitHub")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Password: super-secret")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "show", dbPath, "/Personal/GitHub")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Password: super-secret")
+
+	if err := os.WriteFile(configPath, []byte("default_database: "+dbPath+"\nreveal: false\n"), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() failed: %v", err)
+	}
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "show", "/Personal/GitHub")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Password: [redacted]")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "show", "/Personal/GitHub", "--reveal")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Password: super-secret")
+}
+
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
 	t.Parallel()
 

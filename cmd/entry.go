@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/whosthatknocking/kpx/internal/cli"
+	"github.com/whosthatknocking/kpx/internal/config"
 	"github.com/whosthatknocking/kpx/internal/vault"
 )
 
@@ -63,7 +64,16 @@ func init() {
 				return err
 			}
 
-			printEntry(cmd.OutOrStdout(), entry, showReveal)
+			reveal := showReveal
+			if !cmd.Flags().Changed("reveal") {
+				cfg, err := config.Load()
+				if err != nil {
+					return err
+				}
+				reveal = cfg.Reveal
+			}
+
+			printEntry(cmd.OutOrStdout(), entry, reveal)
 			return nil
 		},
 	}

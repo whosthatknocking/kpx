@@ -31,6 +31,7 @@ Implemented today:
 - list, show, add, edit, and delete entries
 - search entries by title
 - store an optional default database in `~/.kpx/config.yml`
+- support optional default `reveal` behavior in `~/.kpx/config.yml`
 - omit the database argument for vault commands when a default is configured
 - show the CLI version via `kpx version` and `kpx --version`
 - atomic save behavior
@@ -132,6 +133,7 @@ Create `~/.kpx/config.yml`:
 
 ```yaml
 default_database: /Users/you/vault.kdbx
+reveal: false
 ```
 
 Then omit the database path for vault commands:
@@ -139,6 +141,8 @@ Then omit the database path for vault commands:
 ```bash
 printf '%s\n' 'master-password' | ./kpx --master-password-stdin entry show /Personal/GitHub
 ```
+
+If `reveal: true` is set in the config, `entry show` reveals passwords by default. Passing `--reveal` on the CLI still takes precedence when you want to override the config for a specific command.
 
 ## Command Shape
 
@@ -163,6 +167,7 @@ Path rules:
 - group paths look like `/Personal/Email`
 - entry paths look like `/Personal/GitHub`
 - the database argument is optional when `~/.kpx/config.yml` defines `default_database`
+- `entry show` uses `reveal` from config unless `--reveal` is explicitly passed
 - ambiguous matches fail closed
 
 ## Security Notes

@@ -50,6 +50,7 @@ Current product status in the workspace:
 - [x] `--version`
 - [x] atomic save support
 - [x] optional default database config in `~/.kpx/config.yml`
+- [x] optional default reveal behavior in `~/.kpx/config.yml`
 - [x] secure password prompt support
 - [ ] JSON output
 - [ ] key file support
@@ -264,8 +265,10 @@ Supported:
 
 - optional config file in `~/.kpx/config.yml`
 - optional `default_database` setting
+- optional `reveal` setting for `entry show`
 - commands that open an existing vault may omit the database path when `default_database` is configured
 - explicit command-line database arguments override config
+- explicit CLI `--reveal` overrides config
 
 ### 7.9 Example workflows
 
