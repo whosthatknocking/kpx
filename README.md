@@ -14,7 +14,7 @@ It aims to be small, scriptable, and easy to audit:
 
 `kpx` is usable today for password-only `KDBX4` workflows.
 
-Current release: `v0.1.7`
+Current release: `v0.1.8`
 
 The project is still maturing, and the CLI surface, output details, config behavior, and internal Go APIs may change between early releases.
 
@@ -61,7 +61,7 @@ go install github.com/whosthatknocking/kpx@latest
 Install a specific version:
 
 ```bash
-go install github.com/whosthatknocking/kpx@v0.1.7
+go install github.com/whosthatknocking/kpx@v0.1.8
 ```
 
 Build from source:
@@ -114,6 +114,12 @@ Reveal a password explicitly:
 
 ```bash
 printf '%s\n' 'master-password' | ./kpx --master-password-stdin entry show ./vault.kdbx /Personal/GitHub --reveal
+```
+
+Print only the password for piping to `pbcopy`:
+
+```bash
+printf '%s\n' 'master-password' | ./kpx --master-password-stdin entry password ./vault.kdbx /Personal/GitHub | pbcopy
 ```
 
 Search by title:
@@ -199,6 +205,7 @@ Available today:
 - `kpx group add`
 - `kpx entry ls`
 - `kpx entry show`
+- `kpx entry password`
 - `kpx entry add`
 - `kpx entry edit`
 - `kpx entry rm`

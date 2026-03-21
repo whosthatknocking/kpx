@@ -45,6 +45,7 @@ Current product status in the workspace:
 - [x] `group add`
 - [x] `entry ls`
 - [x] `entry show`
+- [x] `entry password`
 - [x] `entry add`
 - [x] `entry edit`
 - [x] `entry rm`
@@ -200,6 +201,7 @@ Required:
 
 - [x] list entries
 - [x] show entry details
+- [x] print only an entry password
 - [x] add entry
 - [x] edit entry fields
 - [x] delete entry
@@ -222,6 +224,7 @@ CLI examples:
 ```bash
 kpx entry ls vault.kdbx /Personal
 kpx entry show vault.kdbx /Personal/GitHub
+kpx entry password vault.kdbx /Personal/GitHub
 kpx entry add vault.kdbx /Personal/GitHub --username alice
 kpx entry edit vault.kdbx /Personal/GitHub --url https://github.com
 kpx entry rm vault.kdbx /Personal/GitHub
@@ -595,6 +598,7 @@ Database selection should support:
 
 - `kpx entry ls`
 - `kpx entry show`
+- `kpx entry password`
 - `kpx entry add`
 - `kpx entry edit`
 - `kpx entry rm`

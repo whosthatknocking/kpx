@@ -67,6 +67,10 @@ func TestCLIFlow(t *testing.T) {
 	result.requireSuccess(t)
 	result.requireStdoutContains(t, "Password: super-secret")
 
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "password", dbPath, "/Personal/GitHub")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "super-secret")
+
 	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "find", dbPath, "git")
 	result.requireSuccess(t)
 	result.requireStdoutContains(t, "/Personal/GitHub")
@@ -148,6 +152,10 @@ func TestDefaultDatabaseConfig(t *testing.T) {
 	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "show", "/Personal/GitHub", "--reveal")
 	result.requireSuccess(t)
 	result.requireStdoutContains(t, "Password: super-secret")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "password", "/Personal/GitHub")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "super-secret")
 
 	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "find", "git")
 	result.requireSuccess(t)
@@ -424,7 +432,7 @@ func TestPaperExportWritesFile(t *testing.T) {
 
 	for _, want := range []string{
 		"kpx Paper Backup",
-		"Tool Version: 0.1.7",
+		"Tool Version: 0.1.8",
 		"Database: Test Vault",
 		"Source File: " + dbPath,
 		"Path: /Personal/GitHub",
@@ -529,6 +537,33 @@ func TestVersionJSON(t *testing.T) {
 	result.requireStdoutContains(t, `"version": "`)
 }
 
+func TestEntryPasswordJSON(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+	runKPX(
+		t,
+		tempDir,
+		"hunter2\n",
+		"--master-password-stdin",
+		"entry",
+		"add",
+		dbPath,
+		"/Personal/GitHub",
+		"--password",
+		"super-secret",
+	).requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "password", dbPath, "/Personal/GitHub")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, `"password": "super-secret"`)
+	result.requireStdoutContains(t, `"path": "/Personal/GitHub"`)
+}
+
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
 	t.Parallel()
 
@@ -576,8 +611,8 @@ func TestVersionFlag(t *testing.T) {
 func TestBaseVersionIsEmbedded(t *testing.T) {
 	t.Parallel()
 
-	if got := buildinfo.BaseVersion(); got != "0.1.7" {
-		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.7")
+	if got := buildinfo.BaseVersion(); got != "0.1.8" {
+		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.8")
 	}
 }
 

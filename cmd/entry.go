@@ -94,6 +94,38 @@ func init() {
 	}
 	entryShowCmd.Flags().BoolVar(&showReveal, "reveal", false, "Show the stored password")
 
+	entryPasswordCmd := &cobra.Command{
+		Use:   "password [database] <entry-path>",
+		Short: "Print only the entry password",
+		Args:  cobra.RangeArgs(1, 2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path, remaining, err := resolveDatabasePath(args, 1)
+			if err != nil {
+				return err
+			}
+
+			v, err := openVaultForRead(path)
+			if err != nil {
+				return err
+			}
+
+			entry, err := v.GetEntry(remaining[0])
+			if err != nil {
+				return err
+			}
+
+			if opts.JSON {
+				return writeJSON(cmd.OutOrStdout(), map[string]any{
+					"path":     entry.Path,
+					"password": entry.Password,
+				})
+			}
+
+			fmt.Fprintln(cmd.OutOrStdout(), entry.Password)
+			return nil
+		},
+	}
+
 	var addOpts entryAddOptions
 	entryAddCmd := &cobra.Command{
 		Use:   "add [database] <entry-path>",
@@ -281,6 +313,6 @@ func init() {
 	}
 	entryRmCmd.Flags().BoolVar(&rmForce, "force", false, "Skip delete confirmation")
 
-	entryCmd.AddCommand(entryLsCmd, entryShowCmd, entryAddCmd, entryEditCmd, entryRmCmd)
+	entryCmd.AddCommand(entryLsCmd, entryShowCmd, entryPasswordCmd, entryAddCmd, entryEditCmd, entryRmCmd)
 	rootCmd.AddCommand(entryCmd)
 }
