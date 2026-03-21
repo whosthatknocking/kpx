@@ -32,13 +32,14 @@ type EntryPatch struct {
 
 // EntryRecord is the app-facing representation used by CLI output and tests.
 type EntryRecord struct {
-	Path         string
-	Title        string
-	UserName     string
-	Password     string
-	URL          string
-	Notes        string
-	CustomFields map[string]string
+	Path                  string
+	Title                 string
+	UserName              string
+	Password              string
+	URL                   string
+	Notes                 string
+	CustomFields          map[string]string
+	ProtectedCustomFields map[string]bool
 }
 
 // Vault wraps the KDBX library behind path-based operations used by the CLI.

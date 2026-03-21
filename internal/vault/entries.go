@@ -257,13 +257,14 @@ func findUniqueEntry(group *gokeepasslib.Group, title string) (*gokeepasslib.Ent
 
 func entryRecord(groupPath string, entry *gokeepasslib.Entry) EntryRecord {
 	record := EntryRecord{
-		Path:         joinGroupPath(groupPath, entry.GetTitle()),
-		Title:        entry.GetContent(fieldTitle),
-		UserName:     entry.GetContent(fieldUserName),
-		Password:     entry.GetContent(fieldPassword),
-		URL:          entry.GetContent(fieldURL),
-		Notes:        entry.GetContent(fieldNotes),
-		CustomFields: map[string]string{},
+		Path:                  joinGroupPath(groupPath, entry.GetTitle()),
+		Title:                 entry.GetContent(fieldTitle),
+		UserName:              entry.GetContent(fieldUserName),
+		Password:              entry.GetContent(fieldPassword),
+		URL:                   entry.GetContent(fieldURL),
+		Notes:                 entry.GetContent(fieldNotes),
+		CustomFields:          map[string]string{},
+		ProtectedCustomFields: map[string]bool{},
 	}
 
 	for _, item := range entry.Values {
@@ -271,6 +272,7 @@ func entryRecord(groupPath string, entry *gokeepasslib.Entry) EntryRecord {
 			continue
 		}
 		record.CustomFields[item.Key] = item.Value.Content
+		record.ProtectedCustomFields[item.Key] = item.Value.Protected.Bool
 	}
 
 	return record

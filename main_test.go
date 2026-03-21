@@ -357,7 +357,7 @@ func TestPaperExportWritesFile(t *testing.T) {
 
 	for _, want := range []string{
 		"kpx Paper Backup",
-		"Tool Version: 0.1.6",
+		"Tool Version: 0.1.7",
 		"Database: Test Vault",
 		"Source File: " + dbPath,
 		"Path: /Personal/GitHub",
@@ -397,6 +397,69 @@ func TestPaperExportRequiresForceWithNoInput(t *testing.T) {
 		t.Fatalf("expected export under --no-input without --force to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
 	}
 	result.requireStderrContains(t, "paper export requires --force when --no-input is set")
+}
+
+func TestGroupListJSON(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "group", "ls", dbPath)
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, `"groups": [`)
+	result.requireStdoutContains(t, `"/Personal"`)
+}
+
+func TestEntryShowJSONRedactsPasswordUnlessReveal(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+	runKPX(
+		t,
+		tempDir,
+		"hunter2\n",
+		"--master-password-stdin",
+		"entry",
+		"add",
+		dbPath,
+		"/Personal/GitHub",
+		"--username",
+		"alice",
+		"--password",
+		"super-secret",
+		"--field",
+		"Environment=prod",
+	).requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "show", dbPath, "/Personal/GitHub")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, `"password": "[redacted]"`)
+	result.requireStdoutContains(t, `"Environment": "prod"`)
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "show", dbPath, "/Personal/GitHub", "--reveal")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, `"password": "super-secret"`)
+	result.requireStdoutContains(t, `"Environment": "prod"`)
+}
+
+func TestVersionJSON(t *testing.T) {
+	t.Parallel()
+
+	result := runKPX(t, t.TempDir(), "", "--json", "version")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, `"version": "`)
+
+	result = runKPX(t, t.TempDir(), "", "--version", "--json")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, `"version": "`)
 }
 
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
@@ -446,8 +509,8 @@ func TestVersionFlag(t *testing.T) {
 func TestBaseVersionIsEmbedded(t *testing.T) {
 	t.Parallel()
 
-	if got := buildinfo.BaseVersion(); got != "0.1.6" {
-		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.6")
+	if got := buildinfo.BaseVersion(); got != "0.1.7" {
+		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.7")
 	}
 }
 

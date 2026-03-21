@@ -14,7 +14,7 @@ It aims to be small, scriptable, and easy to audit:
 
 `kpx` is usable today for password-only `KDBX4` workflows.
 
-Current release: `v0.1.6`
+Current release: `v0.1.7`
 
 The project is still maturing, and the CLI surface, output details, config behavior, and internal Go APIs may change between early releases.
 
@@ -42,6 +42,7 @@ Implemented today:
 - back up the database before saving, with configurable destination and filename format
 - omit the database argument for vault commands when a default is configured
 - export a printable plaintext recovery document with secrets for secure paper backup
+- emit JSON output for supported commands with `--json`
 - show the CLI version via `kpx version` and `kpx --version`
 - atomic save behavior
 - a refactored package layout with smaller command and vault files
@@ -60,7 +61,7 @@ go install github.com/whosthatknocking/kpx@latest
 Install a specific version:
 
 ```bash
-go install github.com/whosthatknocking/kpx@v0.1.6
+go install github.com/whosthatknocking/kpx@v0.1.7
 ```
 
 Build from source:
@@ -182,6 +183,14 @@ kpx version
 kpx --version
 ```
 
+JSON output:
+
+```bash
+kpx --json entry show ./vault.kdbx /Personal/GitHub
+```
+
+JSON support is available for the commands listed below, but the output schema may still evolve while the project is in early releases.
+
 Available today:
 
 - `kpx db create`
@@ -204,6 +213,7 @@ Path rules:
 - entry paths look like `/Personal/GitHub`
 - the database argument is optional when `~/.kpx/config.yml` defines `default_database`
 - `entry show` uses `reveal` from config unless `--reveal` is explicitly passed
+- `--json` emits machine-readable output for supported commands, but the JSON schema is not guaranteed stable yet
 - ambiguous matches fail closed
 
 ## Security Notes
@@ -222,7 +232,6 @@ Path rules:
 Current limitations:
 
 - key files are not supported yet
-- JSON output is not supported yet
 - advisory locks coordinate cooperating `kpx` processes, not every external KeePass tool
 - `direct_write` is available for compatibility, but `temporary_file` remains the safer default
 - paper export writes plaintext secrets and should be handled like a physical recovery artifact
@@ -234,7 +243,6 @@ Planned next:
 - key file support
 - password + key file support
 - group rename, move, and delete
-- JSON output
 - stronger KeePassXC fixture coverage
 
 ## Compatibility

@@ -1,12 +1,63 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"sort"
 
 	"github.com/whosthatknocking/kpx/internal/vault"
 )
+
+type entryView struct {
+	Path         string            `json:"path"`
+	Title        string            `json:"title"`
+	UserName     string            `json:"username"`
+	Password     string            `json:"password"`
+	URL          string            `json:"url"`
+	Notes        string            `json:"notes"`
+	CustomFields map[string]string `json:"custom_fields,omitempty"`
+}
+
+type statusView struct {
+	Status string `json:"status"`
+	Kind   string `json:"kind,omitempty"`
+	Path   string `json:"path,omitempty"`
+	Output string `json:"output,omitempty"`
+	Format string `json:"format,omitempty"`
+}
+
+func writeJSON(w io.Writer, value any) error {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(value)
+}
+
+func entryJSONView(entry vault.EntryRecord, reveal bool) entryView {
+	password := "[redacted]"
+	if reveal {
+		password = entry.Password
+	}
+
+	customFields := make(map[string]string, len(entry.CustomFields))
+	for key, value := range entry.CustomFields {
+		if !reveal && entry.ProtectedCustomFields[key] {
+			customFields[key] = "[redacted]"
+			continue
+		}
+		customFields[key] = value
+	}
+
+	return entryView{
+		Path:         entry.Path,
+		Title:        entry.Title,
+		UserName:     entry.UserName,
+		Password:     password,
+		URL:          entry.URL,
+		Notes:        entry.Notes,
+		CustomFields: customFields,
+	}
+}
 
 func printEntry(w io.Writer, entry vault.EntryRecord, reveal bool) {
 	fmt.Fprintf(w, "Path: %s\n", entry.Path)
@@ -27,6 +78,14 @@ func printEntry(w io.Writer, entry vault.EntryRecord, reveal bool) {
 	sort.Strings(keys)
 
 	for _, key := range keys {
-		fmt.Fprintf(w, "%s: %s\n", key, entry.CustomFields[key])
+		value := entry.CustomFields[key]
+		if !reveal && entry.ProtectedCustomFields[key] {
+			value = "[redacted]"
+		}
+		fmt.Fprintf(w, "%s: %s\n", key, value)
 	}
+}
+
+func writeStatus(cmdOutput io.Writer, view statusView) error {
+	return writeJSON(cmdOutput, view)
 }

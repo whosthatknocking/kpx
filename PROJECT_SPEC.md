@@ -62,7 +62,7 @@ Current product status in the workspace:
 - [x] advisory file locking for cooperating `kpx` processes
 - [x] secure password prompt support
 - [x] paper export for printed emergency recovery
-- [ ] JSON output
+- [x] JSON output for supported commands
 - [ ] key file support
 - [ ] group rename/move/delete
 
@@ -108,7 +108,6 @@ After MVP is stable, v1 can add:
 - group rename/move/delete
 - key file support
 - password + key file combination
-- JSON output
 - credential change command
 - stronger compatibility and round-trip coverage
 
@@ -248,7 +247,6 @@ Planned additions after MVP:
 - group rename/move/delete
 - key file support
 - password + key file combination
-- JSON output
 - credential change command
 
 ### 7.5.1 Paper export for emergency recovery
@@ -346,6 +344,11 @@ Required:
 Planned additional output mode:
 
 - paper-oriented plaintext export for emergency recovery
+- JSON output via `--json` for supported commands
+
+Current note:
+
+- JSON output is implemented for supported commands, but the schema may still evolve until a stable contract is declared.
 
 ### 7.8 Optional user config
 
@@ -420,7 +423,6 @@ kpx export paper ~/vault.kdbx --output ~/vault-paper-backup.txt
 
 - key file support
 - group rename/move/delete
-- JSON output
 - credential change command
 
 ### Phase 3: Nice-to-have after v1.0
@@ -516,6 +518,7 @@ v1 should additionally preserve when supported by the library:
 - `show` commands must redact passwords by default.
 - `--reveal` must be explicit.
 - `--json` output must still redact secrets unless `--reveal` is also passed.
+- JSON support may expand over time, and its schema should not be treated as frozen until the project declares it stable.
 - Commands that can destroy data must require confirmation unless `--force` is provided.
 
 ### 9.3 Process and shell safety
@@ -768,7 +771,6 @@ All of the following must be true for the first usable release:
 ### v1 release criteria
 
 - supports key files
-- supports JSON output for key commands
 - supports group rename/move/delete
 - expands compatibility coverage beyond MVP fixtures
 
@@ -845,7 +847,6 @@ For CLI behavior:
 - [x] paper export for printed emergency recovery
 - [ ] key file support
 - [ ] group rename/move/delete
-- [ ] JSON output
 
 ### Milestone 4: Post-v1 Features
 
@@ -879,7 +880,6 @@ The best v1 expansion after that is:
 
 - key file support
 - group move/delete
-- JSON output
 
 while explicitly excluding in the early phases:
 
