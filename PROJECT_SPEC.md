@@ -18,22 +18,58 @@ The tool should be useful as both:
 - a standalone password manager for terminal users
 - a scriptable automation-friendly CLI for CI, local scripting, and shell workflows
 
+## Implementation Status
+
+Current repo status as of March 21, 2026:
+
+- [x] Git repository initialized
+- [x] GitHub remote configured (`origin`)
+- [x] Initial project spec written
+- [x] Initial commit created and pushed
+- [x] Dedicated `mvp` branch created
+- [x] Go module initialized
+- [x] CLI project skeleton created
+- [x] KDBX integration started
+- [x] Core CLI and vault code split into smaller files by concern
+- [x] Automated test suite currently passes with `go test ./...`
+- [ ] Current Go implementation committed to Git on `mvp`
+
+Current product status in the workspace:
+
+- [x] `db create`
+- [x] `db validate`
+- [x] `group ls`
+- [x] `group add`
+- [x] `entry ls`
+- [x] `entry show`
+- [x] `entry add`
+- [x] `entry edit`
+- [x] `entry rm`
+- [x] `find`
+- [x] `version`
+- [x] `--version`
+- [x] atomic save support
+- [x] secure password prompt support
+- [ ] JSON output
+- [ ] key file support
+- [ ] group rename/move/delete
+
 ## 2. Goals
 
 ### Primary goals
 
-- Read and write KeePassXC-compatible `KDBX4` databases.
-- Ship a small, finishable MVP before adding broader parity features.
-- Keep the codebase small, maintainable, and easy to audit.
-- Favor secure defaults and predictable non-interactive behavior.
-- Work on macOS.
+- [x] Read and write KeePassXC-compatible `KDBX4` databases.
+- [x] Ship a small, finishable MVP before adding broader parity features.
+- [x] Keep the codebase small, maintainable, and easy to audit.
+- [x] Favor secure defaults and predictable non-interactive behavior.
+- [x] Work on macOS.
 
 ### Product goals
 
-- Fast startup and low operational complexity.
-- Human-friendly interactive use.
-- Stable machine-readable output modes for scripting.
-- Minimal external dependencies unless they clearly reduce complexity and risk.
+- [ ] Fast startup and low operational complexity.
+- [x] Human-friendly interactive use.
+- [ ] Stable machine-readable output modes for scripting.
+- [ ] Minimal external dependencies unless they clearly reduce complexity and risk.
 
 ## 3. Scope Levels
 
@@ -41,17 +77,17 @@ The tool should be useful as both:
 
 The minimum viable product should support only:
 
-- create a new `KDBX4` database
-- open an existing `KDBX4` database
-- save changes safely
-- list groups
-- create groups
-- list entries
-- show entries
-- add entries
-- edit entries
-- delete entries
-- search entries by title
+- [x] create a new `KDBX4` database
+- [x] open an existing `KDBX4` database
+- [x] save changes safely
+- [x] list groups
+- [x] create groups
+- [x] list entries
+- [x] show entries
+- [x] add entries
+- [x] edit entries
+- [x] delete entries
+- [x] search entries by title
 
 ### v1
 
@@ -117,12 +153,12 @@ The project is successful when a user can do all of the following entirely with 
 
 Required:
 
-- create database
-- open database
-- validate/decrypt database
-- save database
-- save atomically
-- prompt for master password securely
+- [x] create database
+- [x] open database
+- [x] validate/decrypt database
+- [x] save database
+- [x] save atomically
+- [x] prompt for master password securely
 
 CLI examples:
 
@@ -135,8 +171,8 @@ kpx db validate vault.kdbx
 
 Required:
 
-- list groups as paths
-- create group
+- [x] list groups as paths
+- [x] create group
 
 CLI examples:
 
@@ -149,11 +185,11 @@ kpx group add vault.kdbx /Personal/Email
 
 Required:
 
-- list entries
-- show entry details
-- add entry
-- edit entry fields
-- delete entry
+- [x] list entries
+- [x] show entry details
+- [x] add entry
+- [x] edit entry fields
+- [x] delete entry
 
 Core built-in fields:
 
@@ -182,8 +218,8 @@ kpx entry rm vault.kdbx /Personal/GitHub
 
 Required:
 
-- search by title
-- exact and substring matching
+- [x] search by title
+- [x] exact and substring matching
 
 CLI examples:
 
@@ -218,6 +254,7 @@ Required:
 
 - pretty human-readable output
 - `--quiet` mode
+- version output via command and flag
 - stable exit codes
 
 ### 7.8 Example workflows
@@ -257,13 +294,13 @@ kpx entry edit ~/vault.kdbx /Personal/GitHub --url https://github.com/login
 
 ### Phase 1: Must-have MVP
 
-- database create/open/save
-- master password support
-- group list/create
-- entry CRUD
-- title search
-- atomic saves
-- KeePassXC compatibility validation tests
+- [x] database create/open/save
+- [x] master password support
+- [x] group list/create
+- [x] entry CRUD
+- [x] title search
+- [x] atomic saves
+- [x] KeePassXC compatibility validation tests
 
 ### Phase 2: Strongly desired for v1.0
 
@@ -441,6 +478,11 @@ If a path is ambiguous, the tool must fail with a clear disambiguation message.
 
 - `kpx find`
 
+### Metadata
+
+- `kpx version`
+- `kpx --version`
+
 ### v1 additions
 
 - `kpx db change-master`
@@ -474,6 +516,7 @@ If a path is ambiguous, the tool must fail with a clear disambiguation message.
 - Minimize direct library-specific types outside `internal/kdbx/`.
 - Prefer pure functions and explicit inputs/outputs.
 - Keep business logic separate from CLI rendering.
+- Keep files focused by concern so command wiring, output helpers, and vault operations stay easy to review.
 - Make it easy to swap KDBX libraries if the initial choice proves insufficient.
 
 ## 14. Dependency Strategy
@@ -583,14 +626,14 @@ Required compatibility checks:
 
 All of the following must be true for the first usable release:
 
-- supports `KDBX4` open/save for real KeePassXC fixture databases
-- supports group list/create
-- supports entry CRUD
-- supports title search
-- supports atomic save behavior
-- supports master-password-based unlock
-- test suite passes on macOS
-- documentation includes quickstart and threat notes
+- [x] supports `KDBX4` open/save for real KeePassXC fixture databases
+- [x] supports group list/create
+- [x] supports entry CRUD
+- [x] supports title search
+- [x] supports atomic save behavior
+- [x] supports master-password-based unlock
+- [x] test suite passes on macOS
+- [ ] documentation includes quickstart and threat notes
 
 ### v1 release criteria
 
@@ -607,6 +650,7 @@ Required docs:
 - security model and limitations
 - scripting examples
 - compatibility notes with KeePassXC
+- version command and release-version build notes
 - migration notes for existing KeePassXC users
 - command reference
 
@@ -654,11 +698,11 @@ For CLI behavior:
 
 ### Milestone 1: Foundation
 
-- project skeleton
-- command layout
-- database open/save adapter
-- password prompt flow
-- fixture loading tests
+- [ ] project skeleton
+- [ ] command layout
+- [ ] database open/save adapter
+- [ ] password prompt flow
+- [ ] fixture loading tests
 
 ### Milestone 2: Core Vault Ops
 

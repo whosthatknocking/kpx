@@ -1,0 +1,49 @@
+{
+  "fixtures": [
+    {
+      "name": "generated-basic",
+      "source": "generated",
+      "password": "hunter2",
+      "database_name": "Compatibility Fixture",
+      "groups": [
+        "/Personal",
+        "/Personal/Email"
+      ],
+      "entries": [
+        {
+          "path": "/Personal/GitHub",
+          "username": "alice",
+          "password": "super-secret",
+          "url": "https://github.com",
+          "notes": "Personal account",
+          "custom_fields": {
+            "Environment": "prod"
+          }
+        },
+        {
+          "path": "/Personal/Email/Fastmail",
+          "username": "alice@example.com",
+          "password": "mail-secret",
+          "url": "https://app.fastmail.com",
+          "notes": "Primary mailbox"
+        }
+      ],
+      "searches": [
+        {
+          "query": "git",
+          "exact": false,
+          "expect": [
+            "/Personal/GitHub"
+          ]
+        },
+        {
+          "query": "Fastmail",
+          "exact": true,
+          "expect": [
+            "/Personal/Email/Fastmail"
+          ]
+        }
+      ]
+    }
+  ]
+}
