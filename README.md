@@ -85,7 +85,7 @@ The base release version is stored in [`internal/buildinfo/VERSION.txt`](./inter
 Create a vault:
 
 ```bash
-printf '%s\n' 'master-password' | ./kpx db create ./vault.kdbx --password-stdin --name "Personal Vault"
+printf '%s\n' 'master-password' | ./kpx --master-password-stdin db create ./vault.kdbx --name "Personal Vault"
 ```
 
 Create a group:
@@ -214,6 +214,8 @@ Path rules:
 - the database argument is optional when `~/.kpx/config.yml` defines `default_database`
 - `entry show` uses `reveal` from config unless `--reveal` is explicitly passed
 - `--json` emits machine-readable output for supported commands, but the JSON schema is not guaranteed stable yet
+- `--master-password-stdin` is the standard flag for reading the database master password from stdin
+- `--entry-password-stdin` is the standard flag for reading an entry password from stdin
 - ambiguous matches fail closed
 
 ## Security Notes

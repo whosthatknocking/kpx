@@ -17,7 +17,7 @@ func TestCLIFlow(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	result := runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin", "--name", "Test Vault")
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath, "--name", "Test Vault")
 	result.requireSuccess(t)
 	result.requireStdoutContains(t, "Created "+dbPath)
 
@@ -111,7 +111,7 @@ func TestDefaultDatabaseConfig(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
 	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
@@ -166,7 +166,7 @@ func TestEntryShowUsesRevealConfigUnlessFlagOverrides(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 	runKPX(
 		t,
@@ -216,7 +216,7 @@ func TestMasterPasswordCacheUsesConfiguredSeconds(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 
 	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
@@ -243,7 +243,7 @@ func TestMasterPasswordCacheWorksAcrossCommands(t *testing.T) {
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 	exportPath := filepath.Join(tempDir, "paper.txt")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin", "--name", "Test Vault").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath, "--name", "Test Vault").requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 	runKPX(
 		t,
@@ -301,7 +301,7 @@ func TestSaveCreatesBackupWithDefaultFormat(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 
 	entries, err := os.ReadDir(tempDir)
@@ -328,7 +328,7 @@ func TestSaveCreatesBackupInConfiguredDirectoryWithConfiguredName(t *testing.T) 
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
 	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
 	backupDir := filepath.Join(tempDir, "backups")
@@ -354,7 +354,7 @@ func TestSaveUsesConfiguredDirectWriteMethod(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
 	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
@@ -381,7 +381,7 @@ func TestPaperExportWritesFile(t *testing.T) {
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 	outputPath := filepath.Join(tempDir, "paper.txt")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin", "--name", "Test Vault").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath, "--name", "Test Vault").requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 	runKPX(
 		t,
@@ -434,7 +434,7 @@ func TestPaperExportRequiresExplicitDestination(t *testing.T) {
 
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
 	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "export", "paper", dbPath)
 	if result.exitCode == 0 {
@@ -449,7 +449,7 @@ func TestPaperExportRequiresForceWithNoInput(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 	outputPath := filepath.Join(tempDir, "paper.txt")
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
 	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--no-input", "export", "paper", dbPath, "--output", outputPath)
 	if result.exitCode == 0 {
@@ -464,7 +464,7 @@ func TestGroupListJSON(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 
 	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "group", "ls", dbPath)
@@ -479,7 +479,7 @@ func TestEntryShowJSONRedactsPasswordUnlessReveal(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 	runKPX(
 		t,
@@ -527,7 +527,7 @@ func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
 	tempDir := t.TempDir()
 	dbPath := filepath.Join(tempDir, "vault.kdbx")
 
-	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 	runKPX(
 		t,

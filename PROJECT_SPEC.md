@@ -381,7 +381,7 @@ printf '%s' 'my-secret-password' | kpx entry add ~/vault.kdbx /Personal/GitHub \
   --username alice \
   --url https://github.com \
   --notes 'Personal account' \
-  --password-stdin
+  --master-password-stdin
 ```
 
 List entries and inspect one entry:
@@ -525,7 +525,7 @@ v1 should additionally preserve when supported by the library:
 
 - Avoid putting secrets in process arguments when interactive prompting is possible.
 - Support reading secrets from stdin for automation.
-- Provide `--password-stdin` for non-interactive flows.
+- Provide `--master-password-stdin` for database passwords and `--entry-password-stdin` for entry passwords in non-interactive flows.
 - Document shell history risks clearly.
 - Keep master password caching disabled by default.
 

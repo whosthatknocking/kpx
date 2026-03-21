@@ -111,7 +111,7 @@ func init() {
 			}
 			defer v.Close()
 
-			password, err := entryPassword("Entry password", addOpts.Password, addOpts.PasswordStdin)
+			password, err := entryPassword("Entry password", addOpts.Password, addOpts.EntryPasswordStdin)
 			if err != nil {
 				return err
 			}
@@ -150,7 +150,9 @@ func init() {
 	entryAddCmd.Flags().StringVar(&addOpts.URL, "url", "", "URL")
 	entryAddCmd.Flags().StringVar(&addOpts.Notes, "notes", "", "Notes")
 	entryAddCmd.Flags().StringVar(&addOpts.Password, "password", "", "Entry password")
-	entryAddCmd.Flags().BoolVar(&addOpts.PasswordStdin, "password-stdin", false, "Read the entry password from stdin")
+	entryAddCmd.Flags().BoolVar(&addOpts.EntryPasswordStdin, "entry-password-stdin", false, "Read the entry password from stdin")
+	entryAddCmd.Flags().BoolVar(&addOpts.EntryPasswordStdin, "password-stdin", false, "Deprecated alias for --entry-password-stdin")
+	_ = entryAddCmd.Flags().MarkHidden("password-stdin")
 	entryAddCmd.Flags().StringArrayVar(&addOpts.Fields, "field", nil, "Custom field assignment in KEY=VALUE form")
 
 	var editOpts entryEditOptions
@@ -192,8 +194,8 @@ func init() {
 			if cmd.Flags().Changed("notes") {
 				patch.Notes = cli.StringPtr(editOpts.Notes)
 			}
-			if cmd.Flags().Changed("password") || editOpts.PasswordStdin {
-				password, err := entryPassword("Entry password", editOpts.Password, editOpts.PasswordStdin)
+			if cmd.Flags().Changed("password") || editOpts.EntryPasswordStdin {
+				password, err := entryPassword("Entry password", editOpts.Password, editOpts.EntryPasswordStdin)
 				if err != nil {
 					return err
 				}
@@ -223,7 +225,9 @@ func init() {
 	entryEditCmd.Flags().StringVar(&editOpts.URL, "url", "", "Updated URL")
 	entryEditCmd.Flags().StringVar(&editOpts.Notes, "notes", "", "Updated notes")
 	entryEditCmd.Flags().StringVar(&editOpts.Password, "password", "", "Updated password")
-	entryEditCmd.Flags().BoolVar(&editOpts.PasswordStdin, "password-stdin", false, "Read the updated password from stdin")
+	entryEditCmd.Flags().BoolVar(&editOpts.EntryPasswordStdin, "entry-password-stdin", false, "Read the updated password from stdin")
+	entryEditCmd.Flags().BoolVar(&editOpts.EntryPasswordStdin, "password-stdin", false, "Deprecated alias for --entry-password-stdin")
+	_ = entryEditCmd.Flags().MarkHidden("password-stdin")
 	entryEditCmd.Flags().StringArrayVar(&editOpts.SetFields, "set-field", nil, "Set a custom field using KEY=VALUE")
 	entryEditCmd.Flags().StringArrayVar(&editOpts.ClearFields, "clear-field", nil, "Remove a custom field by key")
 

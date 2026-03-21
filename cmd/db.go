@@ -10,7 +10,6 @@ import (
 )
 
 func init() {
-	var createPasswordStdin bool
 	var createName string
 
 	dbCmd := &cobra.Command{
@@ -27,7 +26,7 @@ func init() {
 			password, err := cli.ReadNewPassword(cli.SecretOptions{
 				Label:         "Master password",
 				NoInput:       opts.NoInput,
-				FromStdin:     createPasswordStdin,
+				FromStdin:     opts.MasterPasswordStdin,
 				ConfirmPrompt: "Confirm master password",
 			})
 			if err != nil {
@@ -59,7 +58,6 @@ func init() {
 			return nil
 		},
 	}
-	createCmd.Flags().BoolVar(&createPasswordStdin, "password-stdin", false, "Read the master password from stdin")
 	createCmd.Flags().StringVar(&createName, "name", "", "Database name stored in metadata")
 
 	validateCmd := &cobra.Command{
