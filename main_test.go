@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/whosthatknocking/kpx/internal/buildinfo"
 )
 
 func TestCLIFlow(t *testing.T) {
@@ -267,7 +269,7 @@ func TestVersionCommand(t *testing.T) {
 
 	result := runKPX(t, t.TempDir(), "", "version")
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, "kpx dev")
+	result.requireStdoutContains(t, "kpx "+buildinfo.String())
 }
 
 func TestVersionFlag(t *testing.T) {
@@ -275,7 +277,7 @@ func TestVersionFlag(t *testing.T) {
 
 	result := runKPX(t, t.TempDir(), "", "--version")
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, "kpx dev")
+	result.requireStdoutContains(t, "kpx "+buildinfo.String())
 }
 
 func TestHelperProcess(_ *testing.T) {

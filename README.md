@@ -88,6 +88,8 @@ To embed a release version in the binary:
 go build -ldflags "-X github.com/whosthatknocking/kpx/internal/buildinfo.Version=v0.1.0" -o kpx .
 ```
 
+Without an injected release version, `kpx` uses Go build metadata to report the current VCS revision when available.
+
 ## Quick Start
 
 Create a vault:
