@@ -27,7 +27,12 @@ func init() {
 				return err
 			}
 
-			for _, path := range v.ListGroups() {
+			groups := v.ListGroups()
+			if opts.JSON {
+				return writeJSON(cmd.OutOrStdout(), map[string]any{"groups": groups})
+			}
+
+			for _, path := range groups {
 				fmt.Fprintln(cmd.OutOrStdout(), path)
 			}
 			return nil
@@ -57,6 +62,13 @@ func init() {
 				return err
 			}
 
+			if opts.JSON {
+				return writeStatus(cmd.OutOrStdout(), statusView{
+					Status: "created",
+					Kind:   "group",
+					Path:   remaining[0],
+				})
+			}
 			writeSuccess(cmd, "Created group %s\n", remaining[0])
 			return nil
 		},

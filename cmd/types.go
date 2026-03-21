@@ -2,6 +2,7 @@ package cmd
 
 type globalOptions struct {
 	Quiet               bool
+	JSON                bool
 	NoInput             bool
 	MasterPasswordStdin bool
 }

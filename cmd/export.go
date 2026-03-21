@@ -83,6 +83,14 @@ func init() {
 				if err := store.WriteFileAtomic(exportOutput, []byte(output)); err != nil {
 					return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to write export %s: %v", exportOutput, err))
 				}
+				if opts.JSON {
+					return writeStatus(cmd.OutOrStdout(), statusView{
+						Status: "exported",
+						Kind:   "database",
+						Output: exportOutput,
+						Format: "paper",
+					})
+				}
 				writeSuccess(cmd, "Wrote paper export to %s\n", exportOutput)
 				return nil
 			case exportStdout:

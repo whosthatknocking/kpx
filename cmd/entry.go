@@ -36,6 +36,17 @@ func init() {
 				return err
 			}
 
+			if opts.JSON {
+				paths := make([]string, 0, len(entries))
+				for _, entry := range entries {
+					paths = append(paths, entry.Path)
+				}
+				return writeJSON(cmd.OutOrStdout(), map[string]any{
+					"group":   remaining[0],
+					"entries": paths,
+				})
+			}
+
 			for _, entry := range entries {
 				fmt.Fprintln(cmd.OutOrStdout(), entry.Path)
 			}
@@ -71,6 +82,10 @@ func init() {
 					return err
 				}
 				reveal = cfg.Reveal
+			}
+
+			if opts.JSON {
+				return writeJSON(cmd.OutOrStdout(), map[string]any{"entry": entryJSONView(entry, reveal)})
 			}
 
 			printEntry(cmd.OutOrStdout(), entry, reveal)
@@ -120,6 +135,13 @@ func init() {
 				return err
 			}
 
+			if opts.JSON {
+				return writeStatus(cmd.OutOrStdout(), statusView{
+					Status: "created",
+					Kind:   "entry",
+					Path:   remaining[0],
+				})
+			}
 			writeSuccess(cmd, "Created entry %s\n", remaining[0])
 			return nil
 		},
@@ -185,6 +207,13 @@ func init() {
 				return err
 			}
 
+			if opts.JSON {
+				return writeStatus(cmd.OutOrStdout(), statusView{
+					Status: "updated",
+					Kind:   "entry",
+					Path:   strings.TrimSpace(remaining[0]),
+				})
+			}
 			writeSuccess(cmd, "Updated entry %s\n", strings.TrimSpace(remaining[0]))
 			return nil
 		},
@@ -235,6 +264,13 @@ func init() {
 				return err
 			}
 
+			if opts.JSON {
+				return writeStatus(cmd.OutOrStdout(), statusView{
+					Status: "deleted",
+					Kind:   "entry",
+					Path:   remaining[0],
+				})
+			}
 			writeSuccess(cmd, "Deleted entry %s\n", remaining[0])
 			return nil
 		},

@@ -25,6 +25,18 @@ func init() {
 			}
 
 			results := v.FindEntries(remaining[0], exact)
+			if opts.JSON {
+				paths := make([]string, 0, len(results))
+				for _, result := range results {
+					paths = append(paths, result.Path)
+				}
+				return writeJSON(cmd.OutOrStdout(), map[string]any{
+					"query":   remaining[0],
+					"exact":   exact,
+					"results": paths,
+				})
+			}
+
 			for _, result := range results {
 				fmt.Fprintln(cmd.OutOrStdout(), result.Path)
 			}

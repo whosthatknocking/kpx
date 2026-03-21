@@ -46,6 +46,13 @@ func init() {
 				return err
 			}
 
+			if opts.JSON {
+				return writeStatus(cmd.OutOrStdout(), statusView{
+					Status: "created",
+					Kind:   "database",
+					Path:   path,
+				})
+			}
 			if !opts.Quiet {
 				fmt.Fprintf(cmd.OutOrStdout(), "Created %s\n", path)
 			}
@@ -79,6 +86,13 @@ func init() {
 				return err
 			}
 
+			if opts.JSON {
+				return writeStatus(cmd.OutOrStdout(), statusView{
+					Status: "validated",
+					Kind:   "database",
+					Path:   v.Path(),
+				})
+			}
 			if !opts.Quiet {
 				fmt.Fprintf(cmd.OutOrStdout(), "Validated %s\n", v.Path())
 			}
