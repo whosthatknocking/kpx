@@ -88,7 +88,7 @@ func renderBackupFilename(path string, format string, now time.Time) string {
 	dbExt := strings.TrimPrefix(dbExtWithDot, ".")
 	dbFilename := strings.TrimSuffix(baseName, dbExtWithDot)
 	dbStem := dbFilename
-	timestamp := now.UTC().Format("20060102T150405.000000000Z")
+	timestamp := now.UTC().Format("20060102T150405Z")
 
 	replacer := strings.NewReplacer(
 		"{db_filename}", dbFilename,
