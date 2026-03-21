@@ -315,6 +315,90 @@ func TestSaveUsesConfiguredDirectWriteMethod(t *testing.T) {
 	result.requireStdoutContains(t, "/Personal")
 }
 
+func TestPaperExportWritesFile(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+	outputPath := filepath.Join(tempDir, "paper.txt")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin", "--name", "Test Vault").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+	runKPX(
+		t,
+		tempDir,
+		"hunter2\n",
+		"--master-password-stdin",
+		"entry",
+		"add",
+		dbPath,
+		"/Personal/GitHub",
+		"--username",
+		"alice",
+		"--password",
+		"super-secret",
+		"--url",
+		"https://github.com",
+		"--notes",
+		"Personal account",
+		"--field",
+		"Recovery Code=ABCD-EFGH",
+	).requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "export", "paper", dbPath, "--output", outputPath, "--force")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Wrote paper export")
+
+	data, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("os.ReadFile() failed: %v", err)
+	}
+	text := string(data)
+
+	for _, want := range []string{
+		"kpx Paper Backup",
+		"Tool Version: 0.1.6",
+		"Database: Test Vault",
+		"Source File: " + dbPath,
+		"Path: /Personal/GitHub",
+		"Password: super-secret",
+		"Recovery Code: ABCD-EFGH",
+	} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("paper export did not contain %q\n%s", want, text)
+		}
+	}
+}
+
+func TestPaperExportRequiresExplicitDestination(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "export", "paper", dbPath)
+	if result.exitCode == 0 {
+		t.Fatalf("expected export without --output or --stdout to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
+	}
+	result.requireStderrContains(t, "paper export requires --output or explicit --stdout")
+}
+
+func TestPaperExportRequiresForceWithNoInput(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+	outputPath := filepath.Join(tempDir, "paper.txt")
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--no-input", "export", "paper", dbPath, "--output", outputPath)
+	if result.exitCode == 0 {
+		t.Fatalf("expected export under --no-input without --force to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
+	}
+	result.requireStderrContains(t, "paper export requires --force when --no-input is set")
+}
+
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
 	t.Parallel()
 

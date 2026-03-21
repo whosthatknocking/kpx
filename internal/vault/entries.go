@@ -27,6 +27,35 @@ func (v *Vault) ListEntries(groupPath string) ([]EntryRecord, error) {
 	return entries, nil
 }
 
+// ListEntriesRecursive returns all entries under the requested group path.
+func (v *Vault) ListEntriesRecursive(groupPath string) ([]EntryRecord, error) {
+	group, err := v.groupByPath(groupPath)
+	if err != nil {
+		return nil, err
+	}
+
+	normalized := normalizeGroupPath(groupPath)
+	entries := make([]EntryRecord, 0)
+
+	var walk func(parentPath string, group *gokeepasslib.Group)
+	walk = func(parentPath string, group *gokeepasslib.Group) {
+		for i := range group.Entries {
+			entries = append(entries, entryRecord(parentPath, &group.Entries[i]))
+		}
+		for i := range group.Groups {
+			child := &group.Groups[i]
+			childPath := joinGroupPath(parentPath, child.Name)
+			walk(childPath, child)
+		}
+	}
+
+	walk(normalized, group)
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Path < entries[j].Path
+	})
+	return entries, nil
+}
+
 // GetEntry resolves a single entry by full path.
 func (v *Vault) GetEntry(entryPath string) (EntryRecord, error) {
 	groupPath, title, ok := splitEntryPath(entryPath)

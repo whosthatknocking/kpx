@@ -39,6 +39,7 @@ Implemented today:
 - support optional master password caching for a configured number of seconds
 - back up the database before saving, with configurable destination and filename format
 - omit the database argument for vault commands when a default is configured
+- export a printable plaintext recovery document with secrets for secure paper backup
 - show the CLI version via `kpx version` and `kpx --version`
 - atomic save behavior
 - a refactored package layout with smaller command and vault files
@@ -118,6 +119,14 @@ Search by title:
 printf '%s\n' 'master-password' | ./kpx --master-password-stdin find ./vault.kdbx github
 ```
 
+Create a paper backup:
+
+```bash
+printf '%s\n' 'master-password' | ./kpx --master-password-stdin export paper ./vault.kdbx \
+  --output ./vault-paper-backup.txt \
+  --force
+```
+
 ## Configuration
 
 Create `~/.kpx/config.yml`:
@@ -160,6 +169,7 @@ The CLI follows a simple noun/verb structure:
 kpx db ...
 kpx group ...
 kpx entry ...
+kpx export ...
 kpx find ...
 ```
 
@@ -181,6 +191,7 @@ Available today:
 - `kpx entry add`
 - `kpx entry edit`
 - `kpx entry rm`
+- `kpx export paper`
 - `kpx find`
 - `kpx version`
 - `kpx --version`
@@ -212,6 +223,7 @@ Current limitations:
 - JSON output is not supported yet
 - advisory locks coordinate cooperating `kpx` processes, not every external KeePass tool
 - `direct_write` is available for compatibility, but `temporary_file` remains the safer default
+- paper export writes plaintext secrets and should be handled like a physical recovery artifact
 
 ## Roadmap
 

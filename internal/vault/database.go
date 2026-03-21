@@ -102,6 +102,14 @@ func (v *Vault) Path() string {
 	return v.path
 }
 
+// DatabaseName returns the user-facing database name when present.
+func (v *Vault) DatabaseName() string {
+	if v == nil || v.db == nil || v.db.Content == nil || v.db.Content.Meta == nil {
+		return ""
+	}
+	return strings.TrimSpace(v.db.Content.Meta.DatabaseName)
+}
+
 // Save backs up the current file, writes the database using the configured
 // save method, and restores unlocked protected values in memory.
 func (v *Vault) Save() (err error) {

@@ -61,6 +61,7 @@ Current product status in the workspace:
 - [x] official on-demand KeePassXC fixtures pinned to upstream commit and SHA-256
 - [x] advisory file locking for cooperating `kpx` processes
 - [x] secure password prompt support
+- [x] paper export for printed emergency recovery
 - [ ] JSON output
 - [ ] key file support
 - [ ] group rename/move/delete
@@ -250,6 +251,78 @@ Planned additions after MVP:
 - JSON output
 - credential change command
 
+### 7.5.1 Paper export for emergency recovery
+
+Goal:
+
+- export a database into a human-readable plaintext format intended for secure
+  printing and physical storage
+
+This export is for readable secret recovery, not machine interchange.
+
+Required behavior:
+
+- include a document header once at the top
+- include export timestamp once at the top
+- include tool version once at the top
+- include database display name once at the top when available
+- include source database path once at the top
+- include entry path, title, username, password, URL, notes, and custom fields
+- omit low-level database internals and implementation-heavy metadata
+- use stable ordering for groups, entries, and custom fields
+- be easy to read, print, and copy/paste
+
+Must exclude by default:
+
+- UUIDs
+- raw XML
+- KDBX header details
+- cryptographic metadata
+- internal timestamps
+- deleted object metadata
+- history
+- attachments
+
+Safety expectations:
+
+- the command must warn that plaintext secrets are being exported
+- the command should require confirmation unless `--force` is provided
+- it should prefer file output
+- it should only write plaintext secrets to stdout when explicitly requested
+
+Recommended command shape:
+
+```bash
+kpx export paper <database>
+kpx export paper <database> --output vault-paper-backup.txt
+```
+
+Example header:
+
+```text
+kpx Paper Backup
+Generated: 2026-03-21T18:42:00Z
+Tool Version: 0.1.6
+Database: Personal Vault
+Source File: /Users/you/vault.kdbx
+```
+
+Example entry block:
+
+```text
+========================================================================
+Path: /Personal/GitHub
+Title: GitHub
+UserName: alice
+Password: super-secret
+URL: https://github.com
+Notes: Personal account
+
+Custom Fields:
+Environment: prod
+Recovery Code: ABCD-EFGH-IJKL
+```
+
 ### 7.6 Later additions
 
 Deferred until after v1:
@@ -269,6 +342,10 @@ Required:
 - `--quiet` mode
 - version output via command and flag
 - stable exit codes
+
+Planned additional output mode:
+
+- paper-oriented plaintext export for emergency recovery
 
 ### 7.8 Optional user config
 
@@ -316,6 +393,12 @@ Search for an entry and update its URL:
 ```bash
 kpx find ~/vault.kdbx github
 kpx entry edit ~/vault.kdbx /Personal/GitHub --url https://github.com/login
+```
+
+Generate a printable emergency recovery export:
+
+```bash
+kpx export paper ~/vault.kdbx --output ~/vault-paper-backup.txt
 ```
 
 ## 8. Feature Priorities
@@ -632,6 +715,7 @@ Cover:
 - path parsing
 - search matching
 - output rendering
+- paper export rendering and field omission rules
 
 ### 16.2 Compatibility tests
 
@@ -664,6 +748,7 @@ Required compatibility checks:
 - no password echo in prompts
 - temp files removed on error
 - atomic save rollback behavior
+- paper export confirmation flow for plaintext secret output
 
 ## 17. Release Criteria
 
@@ -757,6 +842,7 @@ For CLI behavior:
 
 ### Milestone 3: v1 Expansion
 
+- [x] paper export for printed emergency recovery
 - [ ] key file support
 - [ ] group rename/move/delete
 - [ ] JSON output
