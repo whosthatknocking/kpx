@@ -48,6 +48,7 @@ func init() {
 			if err != nil {
 				return err
 			}
+			defer v.Close()
 
 			if err := v.AddGroup(remaining[0]); err != nil {
 				return err

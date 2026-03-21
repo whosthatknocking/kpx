@@ -19,6 +19,12 @@ func Create(path string, opts CreateOptions) error {
 		return cli.NewExitError(cli.ExitGeneric, "master password cannot be empty")
 	}
 
+	writeLock, err := store.LockExclusive(path)
+	if err != nil {
+		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to lock %s: %v", path, err))
+	}
+	defer writeLock.Close()
+
 	db := gokeepasslib.NewDatabase(gokeepasslib.WithDatabaseKDBXVersion4())
 	db.Credentials = gokeepasslib.NewPasswordCredentials(opts.MasterPassword)
 	db.Content.Meta.DatabaseName = opts.DatabaseName
@@ -27,12 +33,37 @@ func Create(path string, opts CreateOptions) error {
 	root.Name = opts.DatabaseName
 	db.Content.Root.Groups = []gokeepasslib.Group{root}
 
-	v := &Vault{path: path, db: db}
+	v := &Vault{path: path, db: db, writeLock: writeLock}
 	return v.Save()
 }
 
 // Open loads, decrypts, and unlocks a database for use by the CLI.
 func Open(path string, password string) (*Vault, error) {
+	readLock, err := store.LockShared(path)
+	if err != nil {
+		return nil, err
+	}
+	defer readLock.Close()
+
+	return openUnlocked(path, password, nil)
+}
+
+// OpenForWrite acquires an exclusive lock before opening a database for mutation.
+func OpenForWrite(path string, password string) (*Vault, error) {
+	writeLock, err := store.LockExclusive(path)
+	if err != nil {
+		return nil, cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to lock %s: %v", path, err))
+	}
+
+	v, err := openUnlocked(path, password, writeLock)
+	if err != nil {
+		_ = writeLock.Close()
+		return nil, err
+	}
+	return v, nil
+}
+
+func openUnlocked(path string, password string, writeLock *store.FileLock) (*Vault, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -63,7 +94,7 @@ func Open(path string, password string) (*Vault, error) {
 		db.Content.Root.Groups = []gokeepasslib.Group{root}
 	}
 
-	return &Vault{path: path, db: db}, nil
+	return &Vault{path: path, db: db, writeLock: writeLock}, nil
 }
 
 // Path returns the backing file path for the opened database.
@@ -74,6 +105,19 @@ func (v *Vault) Path() string {
 // Save backs up the current file, writes the database using the configured
 // save method, and restores unlocked protected values in memory.
 func (v *Vault) Save() (err error) {
+	if v.writeLock == nil {
+		v.writeLock, err = store.LockExclusive(v.path)
+		if err != nil {
+			return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to lock %s: %v", v.path, err))
+		}
+		defer func() {
+			closeErr := v.Close()
+			if closeErr != nil && err == nil {
+				err = cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to release lock for %s: %v", v.path, closeErr))
+			}
+		}()
+	}
+
 	if err := v.db.LockProtectedEntries(); err != nil {
 		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to lock protected entries: %v", err))
 	}
@@ -104,6 +148,16 @@ func (v *Vault) Save() (err error) {
 		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to save %s: %v", v.path, err))
 	}
 	return nil
+}
+
+// Close releases any retained write lock held for a mutating command.
+func (v *Vault) Close() error {
+	if v == nil || v.writeLock == nil {
+		return nil
+	}
+	lock := v.writeLock
+	v.writeLock = nil
+	return lock.Close()
 }
 
 func (v *Vault) rootGroup() *gokeepasslib.Group {

@@ -1,6 +1,9 @@
 package vault
 
-import "github.com/tobischo/gokeepasslib/v3"
+import (
+	"github.com/tobischo/gokeepasslib/v3"
+	"github.com/whosthatknocking/kpx/internal/store"
+)
 
 type CreateOptions struct {
 	MasterPassword string
@@ -40,6 +43,7 @@ type EntryRecord struct {
 
 // Vault wraps the KDBX library behind path-based operations used by the CLI.
 type Vault struct {
-	path string
-	db   *gokeepasslib.Database
+	path      string
+	db        *gokeepasslib.Database
+	writeLock *store.FileLock
 }

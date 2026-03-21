@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/whosthatknocking/kpx/internal/store"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,7 +24,18 @@ func path() (string, error) {
 }
 
 func Read(databasePath string, now time.Time) (string, bool, error) {
-	cfg, err := load()
+	cachePath, err := path()
+	if err != nil {
+		return "", false, err
+	}
+
+	lock, err := store.LockExclusive(cachePath)
+	if err != nil {
+		return "", false, err
+	}
+	defer lock.Close()
+
+	cfg, err := load(cachePath)
 	if err != nil {
 		return "", false, err
 	}
@@ -39,7 +51,7 @@ func Read(databasePath string, now time.Time) (string, bool, error) {
 	}
 	if !entry.ExpiresAt.After(now) {
 		delete(cfg.Entries, key)
-		if err := save(cfg); err != nil {
+		if err := save(cachePath, cfg); err != nil {
 			return "", false, err
 		}
 		return "", false, nil
@@ -52,7 +64,18 @@ func Write(databasePath string, password string, ttl time.Duration, now time.Tim
 		return Delete(databasePath)
 	}
 
-	cfg, err := load()
+	cachePath, err := path()
+	if err != nil {
+		return err
+	}
+
+	lock, err := store.LockExclusive(cachePath)
+	if err != nil {
+		return err
+	}
+	defer lock.Close()
+
+	cfg, err := load(cachePath)
 	if err != nil {
 		return err
 	}
@@ -69,11 +92,22 @@ func Write(databasePath string, password string, ttl time.Duration, now time.Tim
 		ExpiresAt: now.Add(ttl),
 	}
 
-	return save(cfg)
+	return save(cachePath, cfg)
 }
 
 func Delete(databasePath string) error {
-	cfg, err := load()
+	cachePath, err := path()
+	if err != nil {
+		return err
+	}
+
+	lock, err := store.LockExclusive(cachePath)
+	if err != nil {
+		return err
+	}
+	defer lock.Close()
+
+	cfg, err := load(cachePath)
 	if err != nil {
 		return err
 	}
@@ -87,7 +121,7 @@ func Delete(databasePath string) error {
 		return nil
 	}
 	delete(cfg.Entries, key)
-	return save(cfg)
+	return save(cachePath, cfg)
 }
 
 func cacheKey(databasePath string) (string, error) {
@@ -101,12 +135,7 @@ func cacheKey(databasePath string) (string, error) {
 	return absolute, nil
 }
 
-func load() (File, error) {
-	cachePath, err := path()
-	if err != nil {
-		return File{}, err
-	}
-
+func load(cachePath string) (File, error) {
 	data, err := os.ReadFile(cachePath)
 	if errors.Is(err, os.ErrNotExist) {
 		return File{}, nil
@@ -122,12 +151,7 @@ func load() (File, error) {
 	return cfg, nil
 }
 
-func save(cfg File) error {
-	cachePath, err := path()
-	if err != nil {
-		return err
-	}
-
+func save(cachePath string, cfg File) error {
 	if err := os.MkdirAll(filepath.Dir(cachePath), 0o700); err != nil {
 		return err
 	}
@@ -137,5 +161,5 @@ func save(cfg File) error {
 		return err
 	}
 
-	return os.WriteFile(cachePath, data, 0o600)
+	return store.WriteFileAtomic(cachePath, data)
 }

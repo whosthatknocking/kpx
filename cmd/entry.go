@@ -94,6 +94,7 @@ func init() {
 			if err != nil {
 				return err
 			}
+			defer v.Close()
 
 			password, err := entryPassword("Entry password", addOpts.Password, addOpts.PasswordStdin)
 			if err != nil {
@@ -145,6 +146,7 @@ func init() {
 			if err != nil {
 				return err
 			}
+			defer v.Close()
 
 			setCustom, err := cli.ParseFieldAssignments(editOpts.SetFields)
 			if err != nil {
@@ -224,6 +226,7 @@ func init() {
 			if err != nil {
 				return err
 			}
+			defer v.Close()
 
 			if err := v.DeleteEntry(remaining[0]); err != nil {
 				return err

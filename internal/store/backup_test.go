@@ -21,7 +21,7 @@ func TestBackupFileUsesDefaultLocationAndFormat(t *testing.T) {
 		t.Fatalf("BackupFile() failed: %v", err)
 	}
 
-	backupPath := filepath.Join(tempDir, "vault.20260321T123456Z.kdbx")
+	backupPath := filepath.Join(tempDir, "vault.20260321T123456.000000000Z.kdbx")
 	data, err := os.ReadFile(backupPath)
 	if err != nil {
 		t.Fatalf("os.ReadFile() failed: %v", err)
@@ -50,7 +50,7 @@ func TestBackupFileUsesCustomDestinationAndFormat(t *testing.T) {
 		t.Fatalf("BackupFile() failed: %v", err)
 	}
 
-	backupPath := filepath.Join(backupDir, "vault-20260321T123456Z.kdbx")
+	backupPath := filepath.Join(backupDir, "vault-20260321T123456.000000000Z.kdbx")
 	data, err := os.ReadFile(backupPath)
 	if err != nil {
 		t.Fatalf("os.ReadFile() failed: %v", err)

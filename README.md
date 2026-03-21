@@ -182,9 +182,10 @@ Path rules:
 - secrets are redacted by default
 - password prompts use the controlling tty and do not echo
 - master password caching is disabled by default
-- when enabled, cached master passwords are stored on disk under `~/.kpx/master-password-cache.yml` with restrictive file permissions
+- when enabled, cached master passwords are stored on disk under `~/.kpx/master-password-cache.yml` with restrictive file permissions and a cooperating file lock
 - database saves create a backup of the existing file before replacing it
 - save method defaults to temporary-file-then-rename and can be changed to direct write in config
+- cooperating `kpx` processes take advisory locks during database reads and hold an exclusive lock across write operations
 - non-interactive usage supports stdin-based secrets
 - writes are atomic
 - destructive entry deletion requires confirmation unless `--force` is provided

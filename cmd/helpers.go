@@ -58,7 +58,49 @@ func openVaultForRead(path string) (*vault.Vault, error) {
 }
 
 func openVaultForWrite(path string) (*vault.Vault, error) {
-	return openVaultForRead(path)
+	cfg, err := config.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	if cfg.MasterPasswordCacheSeconds > 0 {
+		password, ok, err := cache.Read(path, time.Now())
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			v, err := vault.OpenForWrite(path, password)
+			if err == nil {
+				return v, nil
+			}
+			if exitErr, ok := cli.AsExitError(err); !ok || exitErr.Code != cli.ExitAuth {
+				return nil, err
+			}
+			if err := cache.Delete(path); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	password, err := cli.ReadSecret(cli.SecretOptions{
+		Label:     "Master password",
+		NoInput:   opts.NoInput,
+		FromStdin: opts.MasterPasswordStdin,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	v, err := vault.OpenForWrite(path, password)
+	if err != nil {
+		return nil, err
+	}
+
+	if cfg.MasterPasswordCacheSeconds > 0 {
+		_ = cache.Write(path, password, time.Duration(cfg.MasterPasswordCacheSeconds)*time.Second, time.Now())
+	}
+
+	return v, nil
 }
 
 func resolveDatabasePath(args []string, trailingRequired int) (string, []string, error) {
