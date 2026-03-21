@@ -10,24 +10,78 @@ The automated suite currently includes one `generated` baseline fixture through
 - open and decrypt
 - inspect groups and entries
 - title search
-- save and reopen without losing protected values
+- repeated save and reopen cycles without losing protected values
+- both configured save methods
+- backup file reopen checks after save
 
-## Adding real KeePassXC fixtures
+Current limitation:
 
-To expand this into true cross-tool compatibility coverage:
+- there are still no checked-in real KeePassXC-generated `.kdbx` fixtures in this repository
+- live validation against a locally installed `keepassxc` or `keepassxc-cli` is still separate from these tests
 
-1. Create a `.kdbx` fixture with KeePassXC.
-2. Copy it into this directory, for example `keepassxc-aes-argon2id.kdbx`.
-3. Add a `source: "file"` entry to [`manifest.json`](./manifest.json).
-4. Include:
-   - `path`
-   - `password`
-   - expected `groups`
-   - expected `entries`
-   - any expected `searches`
+## Remote fixtures
 
-The test harness copies file fixtures into a temp directory before saving, so
-the original checked-in fixture stays unchanged.
+The manifest supports fetching real `.kdbx` fixtures on demand instead of
+checking them into this repository. Remote fixtures are opt-in so everyday test
+runs stay offline and deterministic.
+
+Run them with:
+
+```bash
+KPX_REMOTE_FIXTURES=1 go test ./internal/testcompat -run TestCompatibilityFixtures
+```
+
+Use a manifest entry like:
+
+```json
+{
+  "name": "keepassxc-real-aes-argon2id",
+  "source": "url",
+  "url": "https://example.invalid/fixture.kdbx",
+  "sha256": "replace-with-expected-sha256",
+  "password": "hunter2",
+  "database_name": "Fixture",
+  "groups": ["/Personal"],
+  "entries": [
+    {
+      "path": "/Personal/GitHub",
+      "username": "alice",
+      "password": "super-secret",
+      "url": "https://github.com",
+      "notes": "Personal account"
+    }
+  ]
+}
+```
+
+Notes:
+
+- prefer pinned URLs to exact release assets or exact raw file revisions
+- prefer providing `sha256` so fixture contents are verified after download
+- avoid using floating `latest` URLs in automated tests because they reduce reproducibility
+
+## Official KeePassXC fixtures in use
+
+The manifest currently includes official fixtures from the KeePassXC upstream
+repository pinned to a specific upstream commit:
+
+- `tests/data/NewDatabase.kdbx`
+- `tests/data/NonAscii.kdbx`
+
+These are fetched from `keepassxreboot/keepassxc` only when
+`KPX_REMOTE_FIXTURES=1` is set.
+
+## Refreshing upstream fixtures
+
+When KeePassXC changes upstream and you want to update these fixtures:
+
+1. Pick the upstream commit you want to track.
+2. Update the raw GitHub URLs in [`manifest.json`](./manifest.json) to that commit.
+3. Recompute each fixture `sha256`.
+4. Re-run `KPX_REMOTE_FIXTURES=1 go test ./internal/testcompat -run TestCompatibilityFixtures`.
+
+This gives us "fetch as needed" behavior without making the automated suite
+depend on an unstable floating `latest` artifact.
 
 ## Recommended next fixtures
 

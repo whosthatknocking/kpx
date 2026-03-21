@@ -44,6 +44,81 @@
           ]
         }
       ]
+    },
+    {
+      "name": "keepassxc-new-database",
+      "source": "url",
+      "url": "https://raw.githubusercontent.com/keepassxreboot/keepassxc/379be00127db60b1ddee9c67f4bfc49c15db8236/tests/data/NewDatabase.kdbx",
+      "sha256": "5fdee9fff96df5ce58c331a56f4b253ad32e864dba1a86b98df14659283daa29",
+      "password": "a",
+      "database_name": "NewDatabase",
+      "groups": [
+        "/General",
+        "/Homebanking",
+        "/Homebanking/Subgroup",
+        "/Internet",
+        "/Network",
+        "/Windows",
+        "/eMail"
+      ],
+      "entries": [
+        {
+          "path": "/Sample Entry",
+          "username": "User Name",
+          "password": "Password",
+          "url": "http://www.somesite.com/",
+          "notes": "Notes",
+          "custom_fields": {
+            "TOTP Seed": "HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ",
+            "TOTP Settings": "30;6",
+            "TestAttribute1": "b",
+            "testattribute1": "a"
+          }
+        },
+        {
+          "path": "/Homebanking/Subgroup/Subgroup Entry",
+          "username": "Bank User Name",
+          "password": "SecurePassword",
+          "url": "https://www.bank.com",
+          "notes": "Important note"
+        }
+      ],
+      "searches": [
+        {
+          "query": "Sample",
+          "exact": false,
+          "expect": [
+            "/Sample Entry"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "keepassxc-non-ascii",
+      "source": "url",
+      "url": "https://raw.githubusercontent.com/keepassxreboot/keepassxc/379be00127db60b1ddee9c67f4bfc49c15db8236/tests/data/NonAscii.kdbx",
+      "sha256": "e8a69ba7e0cbd86a98b9a9d8fb6df8deecb052a4a3da842b200776434cb760e4",
+      "password": "Δöض",
+      "database_name": "NonAscii",
+      "groups": [],
+      "entries": [
+        {
+          "path": "/秘密",
+          "username": "",
+          "password": "🚗🐎🔋📎",
+          "url": "",
+          "notes": ""
+        }
+      ],
+      "searches": [
+        {
+          "query": "秘",
+          "exact": false,
+          "expect": [
+            "/秘密"
+          ]
+        }
+      ]
     }
   ]
 }

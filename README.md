@@ -208,9 +208,17 @@ The test suite currently includes:
 - CLI end-to-end flow tests
 - repeated save/open round-trip tests
 - atomic write tests
-- fixture-driven compatibility tests
+- fixture-driven compatibility tests across both save methods and backup-enabled saves
 
-Fixture infrastructure for real KeePassXC-generated `.kdbx` files is ready in [internal/testcompat/testdata/fixtures](./internal/testcompat/testdata/fixtures), and the next compatibility step is to add more real fixture files covering multiple KDF and cipher combinations.
+The compatibility harness includes official on-demand fixtures from the KeePassXC upstream repository, currently covering `NewDatabase.kdbx` and `NonAscii.kdbx` from the upstream test suite.
+
+Remote fixtures are opt-in so regular `go test ./...` runs stay offline. To exercise them explicitly:
+
+```bash
+KPX_REMOTE_FIXTURES=1 go test ./internal/testcompat -run TestCompatibilityFixtures
+```
+
+For reliability, fixture URLs are pinned to a specific upstream commit and verified with SHA-256 instead of following a floating `latest` URL.
 
 ## Development
 
