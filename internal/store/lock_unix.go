@@ -10,7 +10,8 @@ import (
 
 // FileLock coordinates cooperating kpx processes through an adjacent lock file.
 type FileLock struct {
-	file *os.File
+	file     *os.File
+	lockPath string
 }
 
 func LockExclusive(path string) (*FileLock, error) {
@@ -37,7 +38,7 @@ func lockPath(path string, mode int) (*FileLock, error) {
 		return nil, err
 	}
 
-	return &FileLock{file: file}, nil
+	return &FileLock{file: file, lockPath: lockPath}, nil
 }
 
 func (l *FileLock) Close() error {
@@ -47,7 +48,13 @@ func (l *FileLock) Close() error {
 
 	err := syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
 	closeErr := l.file.Close()
+	lockPath := l.lockPath
 	l.file = nil
+	l.lockPath = ""
+
+	if closeErr == nil && lockPath != "" {
+		_ = os.Remove(lockPath)
+	}
 	if err != nil {
 		return err
 	}

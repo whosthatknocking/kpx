@@ -3,6 +3,7 @@
 package store
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -91,5 +92,29 @@ func TestSharedLockBlocksWriter(t *testing.T) {
 		}
 	case <-time.After(time.Second):
 		t.Fatal("writer lock did not acquire after shared lock was released")
+	}
+}
+
+func TestLockFileIsRemovedAfterClose(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "vault.kdbx")
+	lockPath := filepath.Join(filepath.Dir(path), "."+filepath.Base(path)+".lock")
+
+	lock, err := LockExclusive(path)
+	if err != nil {
+		t.Fatalf("LockExclusive() failed: %v", err)
+	}
+
+	if _, err := os.Stat(lockPath); err != nil {
+		t.Fatalf("expected lock file to exist while lock is held: %v", err)
+	}
+
+	if err := lock.Close(); err != nil {
+		t.Fatalf("lock.Close() failed: %v", err)
+	}
+
+	if _, err := os.Stat(lockPath); !os.IsNotExist(err) {
+		t.Fatalf("expected lock file to be removed after close, stat err = %v", err)
 	}
 }
