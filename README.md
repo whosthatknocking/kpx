@@ -16,6 +16,8 @@ It aims to be small, scriptable, and easy to audit:
 
 Current release: `v0.1.6`
 
+The project is still maturing, and the CLI surface, output details, config behavior, and internal Go APIs may change between early releases.
+
 ## Overview
 
 `kpx` is intentionally narrower than a full KeePass desktop replacement. The goal is a dependable command-line tool for people who want to:
