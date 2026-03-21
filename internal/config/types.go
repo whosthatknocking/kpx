@@ -6,4 +6,5 @@ type File struct {
 	MasterPasswordCacheSeconds int    `yaml:"master_password_cache_seconds,omitempty"`
 	BackupDirectory            string `yaml:"backup_directory,omitempty"`
 	BackupFilenameFormat       string `yaml:"backup_filename_format,omitempty"`
+	SaveMethod                 string `yaml:"save_method,omitempty"`
 }

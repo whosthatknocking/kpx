@@ -7,3 +7,7 @@ type BackupOptions struct {
 	FilenameFormat string
 	Now            time.Time
 }
+
+type SaveOptions struct {
+	Method string
+}

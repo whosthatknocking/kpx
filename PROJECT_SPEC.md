@@ -53,6 +53,7 @@ Current product status in the workspace:
 - [x] optional default reveal behavior in `~/.kpx/config.yml`
 - [x] optional master password cache duration in `~/.kpx/config.yml`
 - [x] database backup before save with configurable destination and filename format
+- [x] configurable save method with temporary-file writes as the default
 - [x] secure password prompt support
 - [ ] JSON output
 - [ ] key file support
@@ -163,6 +164,7 @@ Required:
 - [x] save database
 - [x] save atomically
 - [x] back up existing database before save
+- [x] configurable save method
 - [x] prompt for master password securely
 
 CLI examples:
@@ -271,6 +273,7 @@ Supported:
 - optional `reveal` setting for `entry show`
 - optional `master_password_cache_seconds` setting, defaulting to disabled
 - optional `backup_directory` and `backup_filename_format` settings for pre-save backups
+- optional `save_method` setting with `temporary_file` as the default and `direct_write` as the alternative
 - commands that open an existing vault may omit the database path when `default_database` is configured
 - explicit command-line database arguments override config
 - explicit CLI `--reveal` overrides config

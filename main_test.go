@@ -289,6 +289,32 @@ func TestSaveCreatesBackupInConfiguredDirectoryWithConfiguredName(t *testing.T) 
 	}
 }
 
+func TestSaveUsesConfiguredDirectWriteMethod(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+
+	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
+		t.Fatalf("os.MkdirAll() failed: %v", err)
+	}
+	configData := "save_method: direct_write\n"
+	if err := os.WriteFile(configPath, []byte(configData), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() failed: %v", err)
+	}
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Created group /Personal")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "ls", dbPath)
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "/Personal")
+}
+
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
 	t.Parallel()
 

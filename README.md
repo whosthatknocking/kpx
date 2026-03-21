@@ -141,10 +141,12 @@ reveal: false
 master_password_cache_seconds: 0
 backup_directory: ""
 backup_filename_format: "{db_stem}.{timestamp}.{db_ext}"
+save_method: "temporary_file"
 ```
 
 Set `master_password_cache_seconds` to a positive number to cache the master password for that many seconds. The default is `0`, which disables caching.
 Leave `backup_directory` empty to store backups alongside the database. The default filename format uses the original database filename plus a UTC timestamp.
+`save_method` defaults to `"temporary_file"`. Set it to `"direct_write"` to write directly to the database file instead.
 
 Available backup filename placeholders:
 
@@ -194,6 +196,7 @@ Path rules:
 - master password caching is disabled by default
 - when enabled, cached master passwords are stored on disk under `~/.kpx/master-password-cache.yml` with restrictive file permissions
 - database saves create a backup of the existing file before replacing it
+- save method defaults to temporary-file-then-rename and can be changed to direct write in config
 - non-interactive usage supports stdin-based secrets
 - writes are atomic
 - destructive entry deletion requires confirmation unless `--force` is provided

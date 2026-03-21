@@ -97,7 +97,9 @@ func (v *Vault) Save() (err error) {
 	}); err != nil {
 		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to back up %s: %v", v.path, err))
 	}
-	if err := store.WriteFileAtomic(v.path, buf.Bytes()); err != nil {
+	if err := store.WriteFile(v.path, buf.Bytes(), store.SaveOptions{
+		Method: cfg.SaveMethod,
+	}); err != nil {
 		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to save %s: %v", v.path, err))
 	}
 	return nil
