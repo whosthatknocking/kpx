@@ -236,6 +236,59 @@ func TestMasterPasswordCacheUsesConfiguredSeconds(t *testing.T) {
 	result.requireStdoutContains(t, "/Personal")
 }
 
+func TestSaveCreatesBackupWithDefaultFormat(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+
+	entries, err := os.ReadDir(tempDir)
+	if err != nil {
+		t.Fatalf("os.ReadDir() failed: %v", err)
+	}
+
+	foundBackup := false
+	for _, entry := range entries {
+		name := entry.Name()
+		if strings.HasPrefix(name, "vault.") && strings.HasSuffix(name, ".kdbx") && name != "vault.kdbx" {
+			foundBackup = true
+			break
+		}
+	}
+	if !foundBackup {
+		t.Fatalf("expected backup file in %s, found entries: %v", tempDir, entryNames(entries))
+	}
+}
+
+func TestSaveCreatesBackupInConfiguredDirectoryWithConfiguredName(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+
+	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	backupDir := filepath.Join(tempDir, "backups")
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
+		t.Fatalf("os.MkdirAll() failed: %v", err)
+	}
+	configData := "backup_directory: " + backupDir + "\nbackup_filename_format: \"{db_stem}-snapshot.{db_ext}\"\n"
+	if err := os.WriteFile(configPath, []byte(configData), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() failed: %v", err)
+	}
+
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+
+	backupPath := filepath.Join(backupDir, "vault-snapshot.kdbx")
+	if _, err := os.Stat(backupPath); err != nil {
+		t.Fatalf("os.Stat(%s) failed: %v", backupPath, err)
+	}
+}
+
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
 	t.Parallel()
 
@@ -361,4 +414,12 @@ func (r commandResult) requireStderrContains(t *testing.T, want string) {
 	if !strings.Contains(r.stderr, want) {
 		t.Fatalf("stderr did not contain %q\nstdout:\n%s\nstderr:\n%s", want, r.stdout, r.stderr)
 	}
+}
+
+func entryNames(entries []os.DirEntry) []string {
+	names := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		names = append(names, entry.Name())
+	}
+	return names
 }

@@ -33,6 +33,7 @@ Implemented today:
 - store an optional default database in `~/.kpx/config.yml`
 - support optional default `reveal` behavior in `~/.kpx/config.yml`
 - support optional master password caching for a configured number of seconds
+- back up the database before saving, with configurable destination and filename format
 - omit the database argument for vault commands when a default is configured
 - show the CLI version via `kpx version` and `kpx --version`
 - atomic save behavior
@@ -138,9 +139,19 @@ Create `~/.kpx/config.yml`:
 default_database: /Users/you/vault.kdbx
 reveal: false
 master_password_cache_seconds: 0
+backup_directory: ""
+backup_filename_format: "{db_stem}.{timestamp}.{db_ext}"
 ```
 
 Set `master_password_cache_seconds` to a positive number to cache the master password for that many seconds. The default is `0`, which disables caching.
+Leave `backup_directory` empty to store backups alongside the database. The default filename format uses the original database filename plus a UTC timestamp.
+
+Available backup filename placeholders:
+
+- `{db_filename}`
+- `{db_stem}`
+- `{db_ext}`
+- `{timestamp}`
 
 Then omit the database path for vault commands:
 
@@ -182,6 +193,7 @@ Path rules:
 - password prompts use the controlling tty and do not echo
 - master password caching is disabled by default
 - when enabled, cached master passwords are stored on disk under `~/.kpx/master-password-cache.yml` with restrictive file permissions
+- database saves create a backup of the existing file before replacing it
 - non-interactive usage supports stdin-based secrets
 - writes are atomic
 - destructive entry deletion requires confirmation unless `--force` is provided

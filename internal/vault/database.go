@@ -9,6 +9,7 @@ import (
 
 	"github.com/tobischo/gokeepasslib/v3"
 	"github.com/whosthatknocking/kpx/internal/cli"
+	"github.com/whosthatknocking/kpx/internal/config"
 	"github.com/whosthatknocking/kpx/internal/store"
 )
 
@@ -85,6 +86,16 @@ func (v *Vault) Save() (err error) {
 	var buf bytes.Buffer
 	if err := gokeepasslib.NewEncoder(&buf).Encode(v.db); err != nil {
 		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to encode database: %v", err))
+	}
+	cfg, err := config.Load()
+	if err != nil {
+		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to load config: %v", err))
+	}
+	if err := store.BackupFile(v.path, store.BackupOptions{
+		DestinationDir: cfg.BackupDirectory,
+		FilenameFormat: cfg.BackupFilenameFormat,
+	}); err != nil {
+		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to back up %s: %v", v.path, err))
 	}
 	if err := store.WriteFileAtomic(v.path, buf.Bytes()); err != nil {
 		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to save %s: %v", v.path, err))

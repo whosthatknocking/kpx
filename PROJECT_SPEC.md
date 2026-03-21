@@ -52,6 +52,7 @@ Current product status in the workspace:
 - [x] optional default database config in `~/.kpx/config.yml`
 - [x] optional default reveal behavior in `~/.kpx/config.yml`
 - [x] optional master password cache duration in `~/.kpx/config.yml`
+- [x] database backup before save with configurable destination and filename format
 - [x] secure password prompt support
 - [ ] JSON output
 - [ ] key file support
@@ -161,6 +162,7 @@ Required:
 - [x] validate/decrypt database
 - [x] save database
 - [x] save atomically
+- [x] back up existing database before save
 - [x] prompt for master password securely
 
 CLI examples:
@@ -268,6 +270,7 @@ Supported:
 - optional `default_database` setting
 - optional `reveal` setting for `entry show`
 - optional `master_password_cache_seconds` setting, defaulting to disabled
+- optional `backup_directory` and `backup_filename_format` settings for pre-save backups
 - commands that open an existing vault may omit the database path when `default_database` is configured
 - explicit command-line database arguments override config
 - explicit CLI `--reveal` overrides config
@@ -407,6 +410,7 @@ v1 should additionally preserve when supported by the library:
 - New databases default to `KDBX4 + Argon2id`.
 - New databases default to `AES-256-CBC` unless ChaCha20 is explicitly requested.
 - Writes must be atomic: write temp file, fsync, rename.
+- Writes should create a backup of the existing database before replacement.
 - Never print secrets unless explicitly requested.
 - Password prompts must not echo.
 - Sensitive fields should be zeroed or dropped from memory as much as practical in Go.
