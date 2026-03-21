@@ -257,4 +257,4 @@ Out of scope for the early versions:
 
 ## License
 
-No license file has been added yet.
+MIT. See [LICENSE](/Users/emt/Workspace/kpxc/LICENSE).
