@@ -38,23 +38,27 @@ Implemented today:
 
 ## Install
 
+Install the latest version with Go:
+
+```bash
+go install github.com/whosthatknocking/kpx@latest
+```
+
+Install a specific version:
+
+```bash
+go install github.com/whosthatknocking/kpx@v0.1.5
+```
+
 Build from source:
 
 ```bash
 git clone https://github.com/whosthatknocking/kpx.git
 cd kpx
-go build ./...
-```
-
-Build the CLI binary:
-
-```bash
 go build -o kpx .
 ```
 
-The base release version is stored in [VERSION.txt](/Users/emt/Workspace/kpxc/internal/buildinfo/VERSION.txt). Update that file when you cut a new release.
-
-Builds always take the base version from that file. When VCS metadata is available, `kpx` also appends commit/build details automatically.
+The base release version is stored in [VERSION.txt](/Users/emt/Workspace/kpxc/internal/buildinfo/VERSION.txt). Builds always take the base version from that file, and append VCS metadata automatically when available.
 
 ## Quick Start
 
