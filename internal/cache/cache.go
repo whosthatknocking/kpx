@@ -39,6 +39,11 @@ func Read(databasePath string, now time.Time) (string, bool, error) {
 	if err != nil {
 		return "", false, err
 	}
+	if pruneExpired(&cfg, now) {
+		if err := saveOrDelete(cachePath, cfg); err != nil {
+			return "", false, err
+		}
+	}
 
 	key, err := cacheKey(databasePath)
 	if err != nil {
@@ -51,7 +56,7 @@ func Read(databasePath string, now time.Time) (string, bool, error) {
 	}
 	if !entry.ExpiresAt.After(now) {
 		delete(cfg.Entries, key)
-		if err := save(cachePath, cfg); err != nil {
+		if err := saveOrDelete(cachePath, cfg); err != nil {
 			return "", false, err
 		}
 		return "", false, nil
@@ -116,12 +121,8 @@ func Delete(databasePath string) error {
 	if err != nil {
 		return err
 	}
-
-	if len(cfg.Entries) == 0 {
-		return nil
-	}
 	delete(cfg.Entries, key)
-	return save(cachePath, cfg)
+	return saveOrDelete(cachePath, cfg)
 }
 
 func cacheKey(databasePath string) (string, error) {
@@ -162,4 +163,30 @@ func save(cachePath string, cfg File) error {
 	}
 
 	return store.WriteFileAtomic(cachePath, data)
+}
+
+func saveOrDelete(cachePath string, cfg File) error {
+	if len(cfg.Entries) == 0 {
+		if err := os.Remove(cachePath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	return save(cachePath, cfg)
+}
+
+func pruneExpired(cfg *File, now time.Time) bool {
+	if len(cfg.Entries) == 0 {
+		return false
+	}
+
+	changed := false
+	for key, entry := range cfg.Entries {
+		if entry.ExpiresAt.After(now) {
+			continue
+		}
+		delete(cfg.Entries, key)
+		changed = true
+	}
+	return changed
 }
