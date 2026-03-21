@@ -16,16 +16,21 @@ func init() {
 	}
 
 	entryLsCmd := &cobra.Command{
-		Use:   "ls <database> <group-path>",
+		Use:   "ls [database] <group-path>",
 		Short: "List entries in a group",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			v, err := openVaultForRead(args[0])
+			path, remaining, err := resolveDatabasePath(args, 1)
 			if err != nil {
 				return err
 			}
 
-			entries, err := v.ListEntries(args[1])
+			v, err := openVaultForRead(path)
+			if err != nil {
+				return err
+			}
+
+			entries, err := v.ListEntries(remaining[0])
 			if err != nil {
 				return err
 			}
@@ -39,16 +44,21 @@ func init() {
 
 	var showReveal bool
 	entryShowCmd := &cobra.Command{
-		Use:   "show <database> <entry-path>",
+		Use:   "show [database] <entry-path>",
 		Short: "Show entry details",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			v, err := openVaultForRead(args[0])
+			path, remaining, err := resolveDatabasePath(args, 1)
 			if err != nil {
 				return err
 			}
 
-			entry, err := v.GetEntry(args[1])
+			v, err := openVaultForRead(path)
+			if err != nil {
+				return err
+			}
+
+			entry, err := v.GetEntry(remaining[0])
 			if err != nil {
 				return err
 			}
@@ -61,11 +71,16 @@ func init() {
 
 	var addOpts entryAddOptions
 	entryAddCmd := &cobra.Command{
-		Use:   "add <database> <entry-path>",
+		Use:   "add [database] <entry-path>",
 		Short: "Add an entry",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			v, err := openVaultForWrite(args[0])
+			path, remaining, err := resolveDatabasePath(args, 1)
+			if err != nil {
+				return err
+			}
+
+			v, err := openVaultForWrite(path)
 			if err != nil {
 				return err
 			}
@@ -80,7 +95,7 @@ func init() {
 				return err
 			}
 
-			if err := v.AddEntry(args[1], vault.EntryInput{
+			if err := v.AddEntry(remaining[0], vault.EntryInput{
 				UserName:     addOpts.UserName,
 				Password:     password,
 				URL:          addOpts.URL,
@@ -94,7 +109,7 @@ func init() {
 				return err
 			}
 
-			writeSuccess(cmd, "Created entry %s\n", args[1])
+			writeSuccess(cmd, "Created entry %s\n", remaining[0])
 			return nil
 		},
 	}
@@ -107,11 +122,16 @@ func init() {
 
 	var editOpts entryEditOptions
 	entryEditCmd := &cobra.Command{
-		Use:   "edit <database> <entry-path>",
+		Use:   "edit [database] <entry-path>",
 		Short: "Edit entry fields",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			v, err := openVaultForWrite(args[0])
+			path, remaining, err := resolveDatabasePath(args, 1)
+			if err != nil {
+				return err
+			}
+
+			v, err := openVaultForWrite(path)
 			if err != nil {
 				return err
 			}
@@ -146,14 +166,14 @@ func init() {
 				patch.Password = cli.StringPtr(password)
 			}
 
-			if err := v.EditEntry(args[1], patch); err != nil {
+			if err := v.EditEntry(remaining[0], patch); err != nil {
 				return err
 			}
 			if err := v.Save(); err != nil {
 				return err
 			}
 
-			writeSuccess(cmd, "Updated entry %s\n", strings.TrimSpace(args[1]))
+			writeSuccess(cmd, "Updated entry %s\n", strings.TrimSpace(remaining[0]))
 			return nil
 		},
 	}
@@ -168,15 +188,20 @@ func init() {
 
 	var rmForce bool
 	entryRmCmd := &cobra.Command{
-		Use:   "rm <database> <entry-path>",
+		Use:   "rm [database] <entry-path>",
 		Short: "Delete an entry",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, remaining, err := resolveDatabasePath(args, 1)
+			if err != nil {
+				return err
+			}
+
 			if !rmForce && opts.NoInput {
 				return cli.NewExitError(cli.ExitGeneric, "delete requires --force when --no-input is set")
 			}
 			if !rmForce && !opts.NoInput {
-				ok, err := cli.Confirm(cmd.ErrOrStderr(), fmt.Sprintf("Delete %s?", args[1]))
+				ok, err := cli.Confirm(cmd.ErrOrStderr(), fmt.Sprintf("Delete %s?", remaining[0]))
 				if err != nil {
 					return err
 				}
@@ -185,19 +210,19 @@ func init() {
 				}
 			}
 
-			v, err := openVaultForWrite(args[0])
+			v, err := openVaultForWrite(path)
 			if err != nil {
 				return err
 			}
 
-			if err := v.DeleteEntry(args[1]); err != nil {
+			if err := v.DeleteEntry(remaining[0]); err != nil {
 				return err
 			}
 			if err := v.Save(); err != nil {
 				return err
 			}
 
-			writeSuccess(cmd, "Deleted entry %s\n", args[1])
+			writeSuccess(cmd, "Deleted entry %s\n", remaining[0])
 			return nil
 		},
 	}

@@ -10,16 +10,21 @@ func init() {
 	var exact bool
 
 	findCmd := &cobra.Command{
-		Use:   "find <database> <query>",
+		Use:   "find [database] <query>",
 		Short: "Search entries by title",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			v, err := openVaultForRead(args[0])
+			path, remaining, err := resolveDatabasePath(args, 1)
 			if err != nil {
 				return err
 			}
 
-			results := v.FindEntries(args[1], exact)
+			v, err := openVaultForRead(path)
+			if err != nil {
+				return err
+			}
+
+			results := v.FindEntries(remaining[0], exact)
 			for _, result := range results {
 				fmt.Fprintln(cmd.OutOrStdout(), result.Path)
 			}

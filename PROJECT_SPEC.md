@@ -49,6 +49,7 @@ Current product status in the workspace:
 - [x] `version`
 - [x] `--version`
 - [x] atomic save support
+- [x] optional default database config in `~/.kpx/config.yml`
 - [x] secure password prompt support
 - [ ] JSON output
 - [ ] key file support
@@ -257,7 +258,16 @@ Required:
 - version output via command and flag
 - stable exit codes
 
-### 7.8 Example workflows
+### 7.8 Optional user config
+
+Supported:
+
+- optional config file in `~/.kpx/config.yml`
+- optional `default_database` setting
+- commands that open an existing vault may omit the database path when `default_database` is configured
+- explicit command-line database arguments override config
+
+### 7.9 Example workflows
 
 Create a new vault:
 
@@ -444,6 +454,12 @@ Entries and groups should be addressable by:
 
 If a path is ambiguous, the tool must fail with a clear disambiguation message.
 
+Database selection should support:
+
+- explicit database path argument
+- optional default database from user config for commands that open an existing vault
+- predictable precedence where explicit CLI arguments win over config
+
 ### 11.3 Scripting behavior
 
 - No interactive prompts when `--no-input` is set
@@ -478,6 +494,11 @@ If a path is ambiguous, the tool must fail with a clear disambiguation message.
 
 - `kpx find`
 
+### Config
+
+- optional `~/.kpx/config.yml`
+- `default_database` setting
+
 ### Metadata
 
 - `kpx version`
@@ -497,6 +518,8 @@ If a path is ambiguous, the tool must fail with a clear disambiguation message.
   - Cobra command definitions
 - `internal/cli/`
   - flag parsing helpers, prompt helpers, output formatting
+- `internal/config/`
+  - optional user config loading and saving
 - `internal/app/`
   - use-case layer for commands
 - `internal/kdbx/`
@@ -650,6 +673,7 @@ Required docs:
 - security model and limitations
 - scripting examples
 - compatibility notes with KeePassXC
+- optional config file behavior and default database workflow
 - version command and release-version build notes
 - migration notes for existing KeePassXC users
 - command reference

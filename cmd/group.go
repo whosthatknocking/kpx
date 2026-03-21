@@ -13,11 +13,16 @@ func init() {
 	}
 
 	groupLsCmd := &cobra.Command{
-		Use:   "ls <database>",
+		Use:   "ls [database]",
 		Short: "List groups as paths",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			v, err := openVaultForRead(args[0])
+			path, _, err := resolveDatabasePath(args, 0)
+			if err != nil {
+				return err
+			}
+
+			v, err := openVaultForRead(path)
 			if err != nil {
 				return err
 			}
@@ -30,23 +35,28 @@ func init() {
 	}
 
 	groupAddCmd := &cobra.Command{
-		Use:   "add <database> <group-path>",
+		Use:   "add [database] <group-path>",
 		Short: "Create a group",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			v, err := openVaultForWrite(args[0])
+			path, remaining, err := resolveDatabasePath(args, 1)
 			if err != nil {
 				return err
 			}
 
-			if err := v.AddGroup(args[1]); err != nil {
+			v, err := openVaultForWrite(path)
+			if err != nil {
+				return err
+			}
+
+			if err := v.AddGroup(remaining[0]); err != nil {
 				return err
 			}
 			if err := v.Save(); err != nil {
 				return err
 			}
 
-			writeSuccess(cmd, "Created group %s\n", args[1])
+			writeSuccess(cmd, "Created group %s\n", remaining[0])
 			return nil
 		},
 	}

@@ -103,6 +103,61 @@ func TestCLIFlow(t *testing.T) {
 	result.requireStdoutNotContains(t, "/Personal/GitHub")
 }
 
+func TestDefaultDatabaseConfig(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "db", "create", dbPath, "--password-stdin").requireSuccess(t)
+
+	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
+		t.Fatalf("os.MkdirAll() failed: %v", err)
+	}
+	if err := os.WriteFile(configPath, []byte("default_database: "+dbPath+"\n"), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() failed: %v", err)
+	}
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", "/Personal")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Created group /Personal")
+
+	result = runKPX(
+		t,
+		tempDir,
+		"hunter2\n",
+		"--master-password-stdin",
+		"entry",
+		"add",
+		"/Personal/GitHub",
+		"--username",
+		"alice",
+		"--password",
+		"super-secret",
+	)
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Created entry /Personal/GitHub")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "show", "/Personal/GitHub", "--reveal")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "Password: super-secret")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "find", "git")
+	result.requireSuccess(t)
+	result.requireStdoutContains(t, "/Personal/GitHub")
+
+	if err := os.WriteFile(configPath, []byte("{}\n"), 0o600); err != nil {
+		t.Fatalf("os.WriteFile() failed: %v", err)
+	}
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "ls")
+	if result.exitCode == 0 {
+		t.Fatalf("expected group ls without explicit database or config default to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
+	}
+	result.requireStderrContains(t, "database path not provided and no default database configured")
+}
+
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
 	t.Parallel()
 
@@ -176,7 +231,7 @@ func runKPX(t *testing.T, dir string, stdin string, args ...string) commandResul
 	cmdArgs := append([]string{"-test.run=TestHelperProcess", "--"}, args...)
 	cmd := exec.Command(os.Args[0], cmdArgs...)
 	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
+	cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1", "HOME="+dir)
 	cmd.Stdin = strings.NewReader(stdin)
 
 	var stdout bytes.Buffer

@@ -6,6 +6,7 @@ require (
 	github.com/spf13/cobra v1.10.1
 	github.com/tobischo/gokeepasslib/v3 v3.6.2
 	golang.org/x/term v0.40.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

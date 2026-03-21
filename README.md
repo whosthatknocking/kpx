@@ -30,6 +30,8 @@ Implemented today:
 - list and create groups
 - list, show, add, edit, and delete entries
 - search entries by title
+- store an optional default database in `~/.kpx/config.yml`
+- omit the database argument for vault commands when a default is configured
 - show the CLI version via `kpx version` and `kpx --version`
 - atomic save behavior
 - a refactored package layout with smaller command and vault files
@@ -126,6 +128,18 @@ Search by title:
 printf '%s\n' 'master-password' | ./kpx --master-password-stdin find ./vault.kdbx github
 ```
 
+Create `~/.kpx/config.yml`:
+
+```yaml
+default_database: /Users/you/vault.kdbx
+```
+
+Then omit the database path for vault commands:
+
+```bash
+printf '%s\n' 'master-password' | ./kpx --master-password-stdin entry show /Personal/GitHub
+```
+
 ## Command Shape
 
 The CLI follows a simple noun/verb structure:
@@ -148,6 +162,7 @@ Path rules:
 
 - group paths look like `/Personal/Email`
 - entry paths look like `/Personal/GitHub`
+- the database argument is optional when `~/.kpx/config.yml` defines `default_database`
 - ambiguous matches fail closed
 
 ## Security Notes
@@ -185,6 +200,7 @@ Project layout:
 cmd/                Cobra command definitions
 internal/buildinfo/ version metadata exposed to the CLI
 internal/cli/       prompting, exit handling, and CLI helpers
+internal/config/    optional user config for default database selection
 internal/store/     atomic file writes
 internal/testcompat/fixture-driven compatibility tests
 internal/vault/     KDBX-backed vault adapter

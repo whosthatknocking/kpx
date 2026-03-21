@@ -56,10 +56,15 @@ func init() {
 	createCmd.Flags().StringVar(&createName, "name", "", "Database name stored in metadata")
 
 	validateCmd := &cobra.Command{
-		Use:   "validate <database>",
+		Use:   "validate [database]",
 		Short: "Validate that a database can be opened with the supplied password",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _, err := resolveDatabasePath(args, 0)
+			if err != nil {
+				return err
+			}
+
 			password, err := cli.ReadSecret(cli.SecretOptions{
 				Label:     "Master password",
 				NoInput:   opts.NoInput,
@@ -69,7 +74,7 @@ func init() {
 				return err
 			}
 
-			v, err := vault.Open(args[0], password)
+			v, err := vault.Open(path, password)
 			if err != nil {
 				return err
 			}
