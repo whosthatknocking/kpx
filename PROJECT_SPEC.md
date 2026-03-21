@@ -127,7 +127,7 @@ Explicitly deferred until after v1:
 
 The following are explicitly out of scope for v1:
 
-- GUI
+- Desktop GUI
 - Browser extension integration
 - Native desktop integration
 - Auto-type

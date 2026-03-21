@@ -27,6 +27,8 @@ The project is still maturing, and the CLI surface, output details, config behav
 - inspect and update entries without leaving the terminal
 - keep compatibility with KeePassXC workflows
 
+Desktop GUI work is out of scope for this project. `kpx` is intended to remain a CLI-first tool rather than grow into a desktop application.
+
 Implemented today:
 
 - create a new database
@@ -290,7 +292,7 @@ Additional project docs:
 
 Out of scope for the early versions:
 
-- GUI
+- desktop GUI
 - browser integration
 - desktop integration
 - SSH agent integration
