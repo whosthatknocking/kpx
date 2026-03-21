@@ -47,7 +47,7 @@ go install github.com/whosthatknocking/kpx@latest
 Install a specific version:
 
 ```bash
-go install github.com/whosthatknocking/kpx@v0.1.5
+go install github.com/whosthatknocking/kpx@v0.1.6
 ```
 
 Build from source:

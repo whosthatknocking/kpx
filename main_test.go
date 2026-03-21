@@ -362,8 +362,8 @@ func TestVersionFlag(t *testing.T) {
 func TestBaseVersionIsEmbedded(t *testing.T) {
 	t.Parallel()
 
-	if got := buildinfo.BaseVersion(); got != "0.1.5" {
-		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.5")
+	if got := buildinfo.BaseVersion(); got != "0.1.6" {
+		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.6")
 	}
 }
 
