@@ -13,6 +13,7 @@ const (
 	fileName = "config.yml"
 )
 
+// DefaultPath returns the user-scoped config path used by kpx.
 func DefaultPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -21,6 +22,7 @@ func DefaultPath() (string, error) {
 	return filepath.Join(home, dirName, fileName), nil
 }
 
+// Load reads the optional user config file. Missing config is not an error.
 func Load() (File, error) {
 	path, err := DefaultPath()
 	if err != nil {
@@ -42,6 +44,7 @@ func Load() (File, error) {
 	return cfg, nil
 }
 
+// Save writes the user config file with restrictive permissions.
 func Save(cfg File) error {
 	path, err := DefaultPath()
 	if err != nil {

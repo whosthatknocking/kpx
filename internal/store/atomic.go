@@ -11,6 +11,7 @@ const (
 	SaveMethodDirect = "direct_write"
 )
 
+// WriteFile saves data using the configured persistence strategy.
 func WriteFile(path string, data []byte, opts SaveOptions) error {
 	switch opts.Method {
 	case "", SaveMethodAtomic:
@@ -30,10 +31,8 @@ func WriteFileAtomic(path string, data []byte) error {
 		return err
 	}
 
-	mode := os.FileMode(0o600)
-	if info, err := os.Stat(path); err == nil {
-		mode = info.Mode().Perm()
-	} else if !errors.Is(err, os.ErrNotExist) {
+	mode, err := fileModeForPath(path)
+	if err != nil {
 		return err
 	}
 
@@ -70,13 +69,7 @@ func WriteFileAtomic(path string, data []byte) error {
 		return err
 	}
 
-	dirHandle, err := os.Open(dir)
-	if err != nil {
-		return nil
-	}
-	defer dirHandle.Close()
-
-	return dirHandle.Sync()
+	return syncDir(dir)
 }
 
 // WriteFileDirect writes directly to the target path and fsyncs the file.
@@ -87,10 +80,8 @@ func WriteFileDirect(path string, data []byte) error {
 		return err
 	}
 
-	mode := os.FileMode(0o600)
-	if info, err := os.Stat(path); err == nil {
-		mode = info.Mode().Perm()
-	} else if !errors.Is(err, os.ErrNotExist) {
+	mode, err := fileModeForPath(path)
+	if err != nil {
 		return err
 	}
 
@@ -106,5 +97,28 @@ func WriteFileDirect(path string, data []byte) error {
 	if _, err := file.Write(data); err != nil {
 		return err
 	}
-	return file.Sync()
+	if err := file.Sync(); err != nil {
+		return err
+	}
+	return syncDir(dir)
+}
+
+func fileModeForPath(path string) (os.FileMode, error) {
+	mode := os.FileMode(0o600)
+	if info, err := os.Stat(path); err == nil {
+		mode = info.Mode().Perm()
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return 0, err
+	}
+	return mode, nil
+}
+
+func syncDir(path string) error {
+	dirHandle, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer dirHandle.Close()
+
+	return dirHandle.Sync()
 }

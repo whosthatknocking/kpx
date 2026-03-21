@@ -11,6 +11,7 @@ import (
 
 const defaultBackupFilenameFormat = "{db_stem}.{timestamp}.{db_ext}"
 
+// BackupFile copies the current database to a timestamped backup before save.
 func BackupFile(path string, opts BackupOptions) error {
 	info, err := os.Stat(path)
 	if err != nil {
@@ -74,7 +75,7 @@ func BackupFile(path string, opts BackupOptions) error {
 		_ = os.Remove(tmpName)
 		return err
 	}
-	return nil
+	return syncDir(destinationDir)
 }
 
 func renderBackupFilename(path string, format string, now time.Time) string {

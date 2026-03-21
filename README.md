@@ -10,7 +10,7 @@ It aims to be small, scriptable, and easy to audit:
 - safe atomic saves
 - secrets redacted by default
 
-## Why
+## Overview
 
 `kpx` is intentionally narrower than a full KeePass desktop replacement. The goal is a dependable command-line tool for people who want to:
 
@@ -18,10 +18,6 @@ It aims to be small, scriptable, and easy to audit:
 - script common vault operations
 - inspect and update entries without leaving the terminal
 - keep compatibility with KeePassXC workflows
-
-## Current Status
-
-The project has moved beyond the spec-only stage and now includes a working MVP codebase with tests.
 
 Implemented today:
 
@@ -39,33 +35,6 @@ Implemented today:
 - atomic save behavior
 - a refactored package layout with smaller command and vault files
 - round-trip and fixture-based test coverage
-
-The detailed product plan still lives in [PROJECT_SPEC.md](./PROJECT_SPEC.md).
-
-## Features
-
-### MVP
-
-- `kpx db create`
-- `kpx db validate`
-- `kpx group ls`
-- `kpx group add`
-- `kpx entry ls`
-- `kpx entry show`
-- `kpx entry add`
-- `kpx entry edit`
-- `kpx entry rm`
-- `kpx find`
-- `kpx version`
-- `kpx --version`
-
-### Planned Next
-
-- key file support
-- password + key file support
-- group rename, move, and delete
-- JSON output
-- stronger KeePassXC fixture coverage
 
 ## Install
 
@@ -86,10 +55,6 @@ go build -o kpx .
 The base release version is stored in [VERSION.txt](/Users/emt/Workspace/kpxc/internal/buildinfo/VERSION.txt). Update that file when you cut a new release.
 
 Builds always take the base version from that file. When VCS metadata is available, `kpx` also appends commit/build details automatically.
-
-```bash
-go build -o kpx .
-```
 
 ## Quick Start
 
@@ -133,6 +98,8 @@ Search by title:
 printf '%s\n' 'master-password' | ./kpx --master-password-stdin find ./vault.kdbx github
 ```
 
+## Configuration
+
 Create `~/.kpx/config.yml`:
 
 ```yaml
@@ -145,7 +112,9 @@ save_method: "temporary_file"
 ```
 
 Set `master_password_cache_seconds` to a positive number to cache the master password for that many seconds. The default is `0`, which disables caching.
+
 Leave `backup_directory` empty to store backups alongside the database. The default filename format uses the original database filename plus a UTC timestamp.
+
 `save_method` defaults to `"temporary_file"`. Set it to `"direct_write"` to write directly to the database file instead.
 
 Available backup filename placeholders:
@@ -163,7 +132,7 @@ printf '%s\n' 'master-password' | ./kpx --master-password-stdin entry show /Pers
 
 If `reveal: true` is set in the config, `entry show` reveals passwords by default. Passing `--reveal` on the CLI still takes precedence when you want to override the config for a specific command.
 
-## Command Shape
+## Commands
 
 The CLI follows a simple noun/verb structure:
 
@@ -180,6 +149,21 @@ Version checks:
 kpx version
 kpx --version
 ```
+
+Available today:
+
+- `kpx db create`
+- `kpx db validate`
+- `kpx group ls`
+- `kpx group add`
+- `kpx entry ls`
+- `kpx entry show`
+- `kpx entry add`
+- `kpx entry edit`
+- `kpx entry rm`
+- `kpx find`
+- `kpx version`
+- `kpx --version`
 
 Path rules:
 
@@ -201,6 +185,16 @@ Path rules:
 - writes are atomic
 - destructive entry deletion requires confirmation unless `--force` is provided
 
+## Roadmap
+
+Planned next:
+
+- key file support
+- password + key file support
+- group rename, move, and delete
+- JSON output
+- stronger KeePassXC fixture coverage
+
 ## Compatibility
 
 `kpx` is currently built around [`tobischo/gokeepasslib/v3`](https://pkg.go.dev/github.com/tobischo/gokeepasslib/v3) behind an internal adapter.
@@ -216,10 +210,18 @@ Fixture infrastructure for real KeePassXC-generated `.kdbx` files is ready in [i
 
 ## Development
 
+Development information starts here so the sections above stay focused on end users.
+
 Run the test suite:
 
 ```bash
 go test ./...
+```
+
+Run additional static analysis:
+
+```bash
+go vet ./...
 ```
 
 Project layout:
@@ -233,14 +235,6 @@ internal/store/     atomic file writes
 internal/testcompat/fixture-driven compatibility tests
 internal/vault/     KDBX-backed vault adapter
 ```
-
-## Roadmap
-
-1. Expand KeePassXC fixture coverage with real checked-in databases
-2. Add key file support
-3. Add JSON output for scripting
-4. Add group rename, move, and delete
-5. Harden compatibility and release packaging
 
 ## Non-Goals
 

@@ -15,6 +15,7 @@ var (
 	Date   = ""
 )
 
+// String returns the base release version plus any available build metadata.
 func String() string {
 	base, commit, date, modified := current()
 
@@ -78,6 +79,7 @@ func current() (base string, commit string, date string, modified bool) {
 	return base, commit, date, modified
 }
 
+// BaseVersion returns the embedded release version from VERSION.txt.
 func BaseVersion() string {
 	return strings.TrimSpace(embeddedVersion)
 }

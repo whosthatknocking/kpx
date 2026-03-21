@@ -71,7 +71,8 @@ func (v *Vault) Path() string {
 	return v.path
 }
 
-// Save writes the database atomically and restores unlocked protected values in memory.
+// Save backs up the current file, writes the database using the configured
+// save method, and restores unlocked protected values in memory.
 func (v *Vault) Save() (err error) {
 	if err := v.db.LockProtectedEntries(); err != nil {
 		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to lock protected entries: %v", err))
