@@ -2,14 +2,40 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/whosthatknocking/kpx/internal/cache"
 	"github.com/whosthatknocking/kpx/internal/cli"
 	"github.com/whosthatknocking/kpx/internal/config"
 	"github.com/whosthatknocking/kpx/internal/vault"
 )
 
 func openVaultForRead(path string) (*vault.Vault, error) {
+	cfg, err := config.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	if cfg.MasterPasswordCacheSeconds > 0 {
+		password, ok, err := cache.Read(path, time.Now())
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			v, err := vault.Open(path, password)
+			if err == nil {
+				return v, nil
+			}
+			if exitErr, ok := cli.AsExitError(err); !ok || exitErr.Code != cli.ExitAuth {
+				return nil, err
+			}
+			if err := cache.Delete(path); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	password, err := cli.ReadSecret(cli.SecretOptions{
 		Label:     "Master password",
 		NoInput:   opts.NoInput,
@@ -19,7 +45,16 @@ func openVaultForRead(path string) (*vault.Vault, error) {
 		return nil, err
 	}
 
-	return vault.Open(path, password)
+	v, err := vault.Open(path, password)
+	if err != nil {
+		return nil, err
+	}
+
+	if cfg.MasterPasswordCacheSeconds > 0 {
+		_ = cache.Write(path, password, time.Duration(cfg.MasterPasswordCacheSeconds)*time.Second, time.Now())
+	}
+
+	return v, nil
 }
 
 func openVaultForWrite(path string) (*vault.Vault, error) {

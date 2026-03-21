@@ -51,6 +51,7 @@ Current product status in the workspace:
 - [x] atomic save support
 - [x] optional default database config in `~/.kpx/config.yml`
 - [x] optional default reveal behavior in `~/.kpx/config.yml`
+- [x] optional master password cache duration in `~/.kpx/config.yml`
 - [x] secure password prompt support
 - [ ] JSON output
 - [ ] key file support
@@ -266,6 +267,7 @@ Supported:
 - optional config file in `~/.kpx/config.yml`
 - optional `default_database` setting
 - optional `reveal` setting for `entry show`
+- optional `master_password_cache_seconds` setting, defaulting to disabled
 - commands that open an existing vault may omit the database path when `default_database` is configured
 - explicit command-line database arguments override config
 - explicit CLI `--reveal` overrides config
@@ -422,6 +424,7 @@ v1 should additionally preserve when supported by the library:
 - Support reading secrets from stdin for automation.
 - Provide `--password-stdin` for non-interactive flows.
 - Document shell history risks clearly.
+- Keep master password caching disabled by default.
 
 ### 9.4 File safety
 
