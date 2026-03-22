@@ -25,6 +25,12 @@ func Create(path string, opts CreateOptions) error {
 	}
 	defer writeLock.Close()
 
+	if _, err := os.Stat(path); err == nil {
+		return cli.NewExitError(cli.ExitGeneric, fmt.Sprintf("database already exists: %s", path))
+	} else if !os.IsNotExist(err) {
+		return cli.NewExitError(cli.ExitSaveFailed, fmt.Sprintf("failed to check %s: %v", path, err))
+	}
+
 	db := gokeepasslib.NewDatabase(gokeepasslib.WithDatabaseKDBXVersion4())
 	db.Credentials = gokeepasslib.NewPasswordCredentials(opts.MasterPassword)
 	db.Content.Meta.DatabaseName = opts.DatabaseName

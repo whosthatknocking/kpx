@@ -176,6 +176,21 @@ func TestDefaultDatabaseConfig(t *testing.T) {
 	result.requireStderrContains(t, "database path not provided and no default database configured")
 }
 
+func TestDBCreateRefusesToOverwriteExistingDatabase(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath)
+	if result.exitCode == 0 {
+		t.Fatalf("expected db create on an existing database to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
+	}
+	result.requireStderrContains(t, "database already exists")
+}
+
 func TestEntryShowUsesRevealConfigUnlessFlagOverrides(t *testing.T) {
 	t.Parallel()
 
@@ -432,7 +447,7 @@ func TestPaperExportWritesFile(t *testing.T) {
 
 	for _, want := range []string{
 		"kpx Paper Backup",
-		"Tool Version: 0.1.8",
+		"Tool Version: 0.1.9",
 		"Database: Test Vault",
 		"Source File: " + dbPath,
 		"Path: /Personal/GitHub",
@@ -604,8 +619,8 @@ func TestVersionFlag(t *testing.T) {
 func TestBaseVersionIsEmbedded(t *testing.T) {
 	t.Parallel()
 
-	if got := buildinfo.BaseVersion(); got != "0.1.8" {
-		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.8")
+	if got := buildinfo.BaseVersion(); got != "0.1.9" {
+		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.9")
 	}
 }
 
