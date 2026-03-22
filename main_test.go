@@ -191,6 +191,22 @@ func TestDBCreateRefusesToOverwriteExistingDatabase(t *testing.T) {
 	result.requireStderrContains(t, "database already exists")
 }
 
+func TestGroupAddRefusesToCreateExistingGroup(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal")
+	if result.exitCode == 0 {
+		t.Fatalf("expected group add on an existing group to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
+	}
+	result.requireStderrContains(t, "group already exists")
+}
+
 func TestEntryShowUsesRevealConfigUnlessFlagOverrides(t *testing.T) {
 	t.Parallel()
 

@@ -32,6 +32,11 @@ func (v *Vault) AddGroup(groupPath string) error {
 	if len(segments) == 0 {
 		return cli.NewExitError(cli.ExitGeneric, "group path must not be /")
 	}
+	if existing, err := v.groupByPath(groupPath); err == nil && existing != nil {
+		return cli.NewExitError(cli.ExitAmbiguous, fmt.Sprintf("group already exists: %s", normalizeGroupPath(groupPath)))
+	} else if err != nil && !isNotFound(err) {
+		return err
+	}
 
 	current := v.rootGroup()
 	for _, segment := range segments {
