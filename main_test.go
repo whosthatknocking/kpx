@@ -537,6 +537,14 @@ func TestVersionJSON(t *testing.T) {
 	result.requireStdoutContains(t, `"version": "`)
 }
 
+func TestHelpDoesNotExposeCompletionCommand(t *testing.T) {
+	t.Parallel()
+
+	result := runKPX(t, t.TempDir(), "", "--help")
+	result.requireSuccess(t)
+	result.requireStdoutNotContains(t, "  completion  ")
+}
+
 func TestEntryPasswordJSON(t *testing.T) {
 	t.Parallel()
 

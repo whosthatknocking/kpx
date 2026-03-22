@@ -29,6 +29,7 @@ func Execute() error {
 }
 
 func init() {
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.PersistentFlags().BoolVarP(&opts.Quiet, "quiet", "q", false, "Suppress success output")
 	rootCmd.PersistentFlags().BoolVar(&opts.JSON, "json", false, "Emit JSON output when supported")
 	rootCmd.PersistentFlags().BoolVar(&opts.NoInput, "no-input", false, "Disable interactive prompting")
