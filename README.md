@@ -80,6 +80,18 @@ Requirements:
 
 The base release version is stored in [`internal/buildinfo/VERSION.txt`](./internal/buildinfo/VERSION.txt). Builds always take the base version from that file, and append VCS metadata automatically when available.
 
+## Shell Completion
+
+Bash completion is shipped as a generated file in [`completions/kpx.bash`](./completions/kpx.bash).
+
+Install it on macOS with Homebrew Bash completion:
+
+```bash
+brew install bash-completion@2
+mkdir -p "$(brew --prefix)/etc/bash_completion.d"
+cp ./completions/kpx.bash "$(brew --prefix)/etc/bash_completion.d/kpx"
+```
+
 ## Quick Start
 
 Create a vault:
