@@ -144,8 +144,7 @@ Create a paper backup:
 
 ```bash
 printf '%s\n' 'master-password' | ./kpx --master-password-stdin export paper ./vault.kdbx \
-  --output ./vault-paper-backup.txt \
-  --force
+  --output ./vault-paper-backup.txt
 ```
 
 ## Configuration

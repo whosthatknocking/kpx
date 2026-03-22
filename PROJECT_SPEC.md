@@ -287,7 +287,6 @@ Must exclude by default:
 Safety expectations:
 
 - the command must warn that plaintext secrets are being exported
-- the command should require confirmation unless `--force` is provided
 - it should prefer file output
 - it should only write plaintext secrets to stdout when explicitly requested
 
@@ -755,7 +754,6 @@ Required compatibility checks:
 - no password echo in prompts
 - temp files removed on error
 - atomic save rollback behavior
-- paper export confirmation flow for plaintext secret output
 
 ## 17. Release Criteria
 

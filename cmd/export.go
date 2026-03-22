@@ -17,7 +17,6 @@ import (
 func init() {
 	var exportOutput string
 	var exportStdout bool
-	var exportForce bool
 	var exportGroup string
 	var exportEntry string
 
@@ -41,18 +40,6 @@ func init() {
 			}
 			if exportGroup != "" && exportEntry != "" {
 				return cli.NewExitError(cli.ExitGeneric, "use either --group or --entry, not both")
-			}
-			if !exportForce && opts.NoInput {
-				return cli.NewExitError(cli.ExitGeneric, "paper export requires --force when --no-input is set")
-			}
-			if !exportForce && !opts.NoInput {
-				ok, err := cli.Confirm(cmd.ErrOrStderr(), "Export plaintext secrets for paper backup?")
-				if err != nil {
-					return err
-				}
-				if !ok {
-					return cli.NewExitError(cli.ExitGeneric, "aborted")
-				}
 			}
 			if exportStdout && term.IsTerminal(int(os.Stdout.Fd())) {
 				fmt.Fprintln(cmd.ErrOrStderr(), "warning: writing plaintext secrets to terminal stdout")
@@ -104,7 +91,6 @@ func init() {
 
 	exportPaperCmd.Flags().StringVar(&exportOutput, "output", "", "Write the paper export to a file")
 	exportPaperCmd.Flags().BoolVar(&exportStdout, "stdout", false, "Write the paper export to stdout")
-	exportPaperCmd.Flags().BoolVar(&exportForce, "force", false, "Skip the plaintext export confirmation")
 	exportPaperCmd.Flags().StringVar(&exportGroup, "group", "", "Export only entries under the given group path")
 	exportPaperCmd.Flags().StringVar(&exportEntry, "entry", "", "Export only the given entry path")
 

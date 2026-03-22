@@ -296,7 +296,7 @@ func TestMasterPasswordCacheWorksAcrossCommands(t *testing.T) {
 		{"--no-input", "entry", "add", dbPath, "/Personal/GitLab", "--username", "alice", "--password", "another-secret"},
 		{"--no-input", "entry", "edit", dbPath, "/Personal/GitHub", "--notes", "Cached update"},
 		{"--no-input", "entry", "rm", dbPath, "/Personal/GitLab", "--force"},
-		{"--no-input", "export", "paper", dbPath, "--output", exportPath, "--force"},
+		{"--no-input", "export", "paper", dbPath, "--output", exportPath},
 	} {
 		result := runKPX(t, tempDir, "", args...)
 		result.requireSuccess(t)
@@ -420,7 +420,7 @@ func TestPaperExportWritesFile(t *testing.T) {
 		"Recovery Code=ABCD-EFGH",
 	).requireSuccess(t)
 
-	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "export", "paper", dbPath, "--output", outputPath, "--force")
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "export", "paper", dbPath, "--output", outputPath)
 	result.requireSuccess(t)
 	result.requireStdoutContains(t, "Wrote paper export")
 
@@ -457,21 +457,6 @@ func TestPaperExportRequiresExplicitDestination(t *testing.T) {
 		t.Fatalf("expected export without --output or --stdout to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
 	}
 	result.requireStderrContains(t, "paper export requires --output or explicit --stdout")
-}
-
-func TestPaperExportRequiresForceWithNoInput(t *testing.T) {
-	t.Parallel()
-
-	tempDir := t.TempDir()
-	dbPath := filepath.Join(tempDir, "vault.kdbx")
-	outputPath := filepath.Join(tempDir, "paper.txt")
-	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
-
-	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--no-input", "export", "paper", dbPath, "--output", outputPath)
-	if result.exitCode == 0 {
-		t.Fatalf("expected export under --no-input without --force to fail\nstdout:\n%s\nstderr:\n%s", result.stdout, result.stderr)
-	}
-	result.requireStderrContains(t, "paper export requires --force when --no-input is set")
 }
 
 func TestGroupListJSON(t *testing.T) {
