@@ -68,32 +68,19 @@ jobs:
             "darwin amd64 tar.gz"
             "darwin arm64 tar.gz"
             "linux amd64 tar.gz"
-            "windows amd64 zip"
           )
 
           for platform in "${platforms[@]}"; do
             read -r goos goarch archive <<<"${platform}"
-            ext=""
-            if [[ "${goos}" == "windows" ]]; then
-              ext=".exe"
-            fi
 
             binary_dir="dist/kpx_${VERSION}_${goos}_${goarch}"
             mkdir -p "${binary_dir}"
 
             GOOS="${goos}" GOARCH="${goarch}" \
-              go build -trimpath -ldflags="-s -w" -o "${binary_dir}/kpx${ext}" .
+              go build -trimpath -ldflags="-s -w" -o "${binary_dir}/kpx" .
 
-            if [[ "${archive}" == "zip" ]]; then
-              (
-                cd dist
-                zip -qr "kpx_${VERSION}_${goos}_${goarch}.zip" "kpx_${VERSION}_${goos}_${goarch}"
-              )
-              rm -rf "${binary_dir}"
-            else
-              tar -C dist -czf "dist/kpx_${VERSION}_${goos}_${goarch}.tar.gz" "kpx_${VERSION}_${goos}_${goarch}"
-              rm -rf "${binary_dir}"
-            fi
+            tar -C dist -czf "dist/kpx_${VERSION}_${goos}_${goarch}.tar.gz" "kpx_${VERSION}_${goos}_${goarch}"
+            rm -rf "${binary_dir}"
           done
 
       - name: Generate checksums
@@ -102,7 +89,7 @@ jobs:
           set -euo pipefail
           (
             cd dist
-            sha256sum *.tar.gz *.zip > checksums.txt
+            sha256sum *.tar.gz > checksums.txt
           )
 
       - name: Create GitHub release
@@ -112,5 +99,4 @@ jobs:
           generate_release_notes: true
           files: |
             dist/*.tar.gz
-            dist/*.zip
             dist/checksums.txt

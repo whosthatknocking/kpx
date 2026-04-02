@@ -322,6 +322,7 @@ git push origin main --tags
 ```
 
 Pushing a `v*` tag runs the GitHub release workflow, verifies the tag matches `internal/buildinfo/VERSION.txt`, runs `go test ./...`, and publishes release archives plus checksums.
+Release archives are currently published for macOS and Linux targets only. Windows release packaging is out of scope for now.
 
 Project layout:
 
