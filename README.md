@@ -72,12 +72,26 @@ cd kpx
 go build -o kpx .
 ```
 
+Install from a release archive:
+
+```bash
+tar -xzf kpx_0.1.9_darwin_arm64.tar.gz
+install -m 0755 kpx_0.1.9_darwin_arm64/kpx ~/.local/bin/kpx
+```
+
+Choose the archive that matches your platform:
+
+- `kpx_<version>_darwin_amd64.tar.gz`
+- `kpx_<version>_darwin_arm64.tar.gz`
+- `kpx_<version>_linux_amd64.tar.gz`
+
 Requirements:
 
 - Go `1.25` or newer for source builds
 - macOS is the primary supported platform today
 - Linux release archives are published for `amd64`
 - Unix-style advisory locking is used for cooperating `kpx` processes
+- Non-Unix platforms may compile for development purposes, but real vault operations are not supported there today because advisory file locking is Unix-only in the current implementation
 
 The base release version is stored in [`internal/buildinfo/VERSION.txt`](./internal/buildinfo/VERSION.txt). Builds always take the base version from that file, and append VCS metadata automatically when available.
 
