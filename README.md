@@ -291,6 +291,19 @@ Current limitations:
 - `direct_write` is available for compatibility, but `temporary_file` remains the safer default
 - paper export writes plaintext secrets and should be handled like a physical recovery artifact
 
+## Troubleshooting
+
+- `no interactive tty available`
+  Use `--master-password-stdin` for database passwords and `--entry-password-stdin` for entry passwords when running non-interactively.
+- `interactive input disabled`
+  `--no-input` turns off prompts entirely. Pair it with stdin flags or a configured master-password cache.
+- `delete requires --force when --no-input is set`
+  Add `--force` to `entry rm` when scripting deletes.
+- advisory locking unsupported on this platform
+  Real vault operations are currently supported on Unix-like systems only.
+- release archive command not found after extraction
+  Move the extracted `kpx` binary into a directory on your `PATH`, such as `~/.local/bin`.
+
 ## Roadmap
 
 Planned next:

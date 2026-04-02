@@ -58,7 +58,8 @@ Keep docs aligned with implementation. If you change command names, flags, confi
   - atomic writes
   - direct-write fallback
   - backup creation
-  - advisory file locking
+  - advisory file locking on Unix-like systems
+  - explicit unsupported-platform stub for non-Unix builds
 - `internal/config/`
   - `~/.kpx/config.yml` load/save behavior
 - `internal/cache/`
@@ -125,6 +126,9 @@ Testing guidance:
 - Add or update tests for any behavior change in command parsing, output, path handling, save behavior, backup behavior, locking, config behavior, cache behavior, or export formatting.
 - Prefer focused package tests first when iterating.
 - Run the full `go test ./...` suite before finishing when you changed behavior.
+- Keep CI expectations aligned with the release surface:
+  - Linux runs the main build, vet, test, and release-target cross-build checks
+  - macOS runs build and test coverage in CI
 - If you change command completions, regenerate and verify `completions/kpx.bash`.
 - If you could not run some validation, say so explicitly in your summary.
 
@@ -169,6 +173,7 @@ Common files to update:
 - The generated bash completion file lives at `completions/kpx.bash`.
 - The config file is `~/.kpx/config.yml`.
 - The master password cache file is `~/.kpx/master-password-cache.yml`.
+- Non-Unix builds compile with a clear unsupported-platform lock stub; real vault operations are currently intended for Unix-like systems only.
 - Current implemented CLI areas include:
   - `db create`
   - `db validate`
