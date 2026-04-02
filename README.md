@@ -302,6 +302,16 @@ Run additional static analysis:
 GOCACHE=/tmp/gocache go vet ./...
 ```
 
+Create a release:
+
+```bash
+# update internal/buildinfo/VERSION.txt and any user-facing version references first
+git tag v$(tr -d '\n' < internal/buildinfo/VERSION.txt)
+git push origin main --tags
+```
+
+Pushing a `v*` tag runs the GitHub release workflow, verifies the tag matches `internal/buildinfo/VERSION.txt`, runs `go test ./...`, and publishes release archives plus checksums.
+
 Project layout:
 
 ```text
