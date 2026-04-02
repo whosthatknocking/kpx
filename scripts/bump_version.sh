@@ -19,10 +19,18 @@ tag="v${version}"
 
 printf '%s\n' "$version" > internal/buildinfo/VERSION.txt
 
-perl -0pi -e 's/Current release: `v[0-9]+\.[0-9]+\.[0-9]+`/Current release: `'"${tag}"'`/g' README.md
-perl -0pi -e 's|go install github\.com/whosthatknocking/kpx@v[0-9]+\.[0-9]+\.[0-9]+|go install github.com/whosthatknocking/kpx@'"${tag}"'|g' README.md
-perl -0pi -e 's|kpx_[0-9]+\.[0-9]+\.[0-9]+_darwin_arm64\.tar\.gz|kpx_'"${version}"'_darwin_arm64.tar.gz|g' README.md
-perl -0pi -e 's|kpx_[0-9]+\.[0-9]+\.[0-9]+_darwin_arm64/kpx|kpx_'"${version}"'_darwin_arm64/kpx|g' README.md
+VERSION="$version" TAG="$tag" ruby <<'RUBY'
+path = "README.md"
+text = File.read(path)
+version = ENV.fetch("VERSION")
+tag = ENV.fetch("TAG")
+text.gsub!(/Current release: `v[0-9.]+`/, "Current release: `#{tag}`")
+text.gsub!(/go install github\.com\/whosthatknocking\/kpx@v[0-9.]+/, "go install github.com/whosthatknocking/kpx@#{tag}")
+text.gsub!(/kpx_[0-9.]+_darwin_arm64\.tar\.gz/, "kpx_#{version}_darwin_arm64.tar.gz")
+text.gsub!(/kpx_[0-9.]+_darwin_arm64\/kpx/, "kpx_#{version}_darwin_arm64/kpx")
+text.gsub!(/\.\/scripts\/bump_version\.sh [0-9.]+/, "./scripts/bump_version.sh #{version}")
+File.write(path, text)
+RUBY
 
 ./scripts/check_release.sh
 echo "updated release version to ${tag}"

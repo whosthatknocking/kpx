@@ -14,7 +14,7 @@ It aims to be small, scriptable, and easy to audit:
 
 `kpx` is usable today for password-only `KDBX4` workflows.
 
-Current release: `v0.1.9`
+Current release: `v0.1.10`
 
 The project is still maturing, and the CLI surface, output details, config behavior, and internal Go APIs may change between early releases.
 
@@ -61,7 +61,7 @@ go install github.com/whosthatknocking/kpx@latest
 Install a specific version:
 
 ```bash
-go install github.com/whosthatknocking/kpx@v0.1.9
+go install github.com/whosthatknocking/kpx@v0.1.10
 ```
 
 Build from source:
@@ -75,8 +75,8 @@ go build -o kpx .
 Install from a release archive:
 
 ```bash
-tar -xzf kpx_0.1.9_darwin_arm64.tar.gz
-install -m 0755 kpx_0.1.9_darwin_arm64/kpx ~/.local/bin/kpx
+tar -xzf kpx_0.1.10_darwin_arm64.tar.gz
+install -m 0755 kpx_0.1.10_darwin_arm64/kpx ~/.local/bin/kpx
 ```
 
 Choose the archive that matches your platform:
