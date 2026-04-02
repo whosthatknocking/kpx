@@ -31,6 +31,9 @@ jobs:
     - name: Vet
       run: go vet ./...
 
+    - name: Check release metadata
+      run: ./tools/check_release.sh
+
     - name: Test
       run: go test -v ./...
 
@@ -54,6 +57,9 @@ jobs:
 
     - name: Build
       run: go build -v ./...
+
+    - name: Check release metadata
+      run: ./tools/check_release.sh
 
     - name: Test
       run: go test -v ./...

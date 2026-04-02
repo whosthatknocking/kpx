@@ -459,12 +459,20 @@ GOCACHE=/tmp/gocache go vet ./...
 Create a release:
 
 ```bash
-# update internal/buildinfo/VERSION.txt and any user-facing version references first
+# 1. Update internal/buildinfo/VERSION.txt
+# 2. Update versioned references in README.md
+# 3. Run the release metadata check
+./tools/check_release.sh
+# 4. Run the test suite
+go test ./...
+# 5. Create and push the matching tag
 git tag v$(tr -d '\n' < internal/buildinfo/VERSION.txt)
 git push origin main --tags
 ```
 
-Pushing a `v*` tag runs the GitHub release workflow, verifies the tag matches `internal/buildinfo/VERSION.txt`, runs `go test ./...`, and publishes release archives plus checksums.
+The release metadata check verifies that the current version is aligned across `internal/buildinfo/VERSION.txt`, `README.md`, and the version-sensitive tests.
+
+Pushing a `v*` tag runs the GitHub release workflow, verifies the tag matches `internal/buildinfo/VERSION.txt`, reruns `./tools/check_release.sh --expect-tag`, runs `go test ./...`, and publishes release archives plus checksums.
 Release archives are currently published for macOS and Linux targets only. Windows release packaging is out of scope for now.
 
 Project layout:
