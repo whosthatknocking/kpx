@@ -76,6 +76,7 @@ Requirements:
 
 - Go `1.25` or newer for source builds
 - macOS is the primary supported platform today
+- Linux release archives are published for `amd64`
 - Unix-style advisory locking is used for cooperating `kpx` processes
 
 The base release version is stored in [`internal/buildinfo/VERSION.txt`](./internal/buildinfo/VERSION.txt). Builds always take the base version from that file, and append VCS metadata automatically when available.
@@ -91,6 +92,15 @@ brew install bash-completion@2
 mkdir -p "$(brew --prefix)/etc/bash_completion.d"
 cp ./completions/kpx.bash "$(brew --prefix)/etc/bash_completion.d/kpx"
 ```
+
+Install it on Linux for the current shell:
+
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+cp ./completions/kpx.bash ~/.local/share/bash-completion/completions/kpx
+```
+
+If you use release archives, extract the matching macOS or Linux tarball and place `kpx` somewhere on your `PATH`, for example `~/.local/bin`.
 
 ## Quick Start
 

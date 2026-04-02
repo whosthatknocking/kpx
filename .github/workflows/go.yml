@@ -13,7 +13,6 @@ permissions:
   contents: read
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -34,3 +33,9 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+    - name: Cross-build release targets
+      run: |
+        GOOS=linux GOARCH=amd64 go build ./...
+        GOOS=darwin GOARCH=amd64 go build ./...
+        GOOS=darwin GOARCH=arm64 go build ./...
