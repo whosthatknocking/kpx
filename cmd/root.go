@@ -23,7 +23,7 @@ func Execute() error {
 	if wantsJSONVersion(os.Args[1:]) {
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
-		return encoder.Encode(map[string]string{"version": buildinfo.String()})
+		return encoder.Encode(versionView{Version: buildinfo.String()})
 	}
 	return rootCmd.Execute()
 }

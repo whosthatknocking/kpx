@@ -350,7 +350,9 @@ Planned additional output mode:
 
 Current note:
 
-- JSON output is implemented for supported commands, but the schema may still evolve until a stable contract is declared.
+- JSON output is implemented for supported commands.
+- For documented commands, the top-level JSON response shape should be treated as part of the supported CLI contract.
+- Future JSON changes should be additive where practical, with redaction behavior preserved unless `--reveal` is explicitly used.
 
 ### 7.8 Optional user config
 
@@ -379,11 +381,11 @@ Create a group and add an entry with a password from stdin:
 
 ```bash
 kpx group add ~/vault.kdbx /Personal
-printf '%s' 'my-secret-password' | kpx entry add ~/vault.kdbx /Personal/GitHub \
+printf '%s\n%s\n' 'vault-master-password' 'my-secret-password' | kpx --master-password-stdin entry add ~/vault.kdbx /Personal/GitHub \
   --username alice \
   --url https://github.com \
   --notes 'Personal account' \
-  --master-password-stdin
+  --entry-password-stdin
 ```
 
 List entries and inspect one entry:
@@ -520,7 +522,7 @@ v1 should additionally preserve when supported by the library:
 - `show` commands must redact passwords by default.
 - `--reveal` must be explicit.
 - `--json` output must still redact secrets unless `--reveal` is also passed.
-- JSON support may expand over time, and its schema should not be treated as frozen until the project declares it stable.
+- JSON support may expand over time, but existing documented response envelopes should remain stable.
 - Commands that can destroy data must require confirmation unless `--force` is provided.
 
 ### 9.3 Process and shell safety

@@ -29,7 +29,7 @@ func init() {
 
 			groups := v.ListGroups()
 			if opts.JSON {
-				return writeJSON(cmd.OutOrStdout(), map[string]any{"groups": groups})
+				return writeJSON(cmd.OutOrStdout(), groupsListView{Groups: groups})
 			}
 
 			for _, path := range groups {

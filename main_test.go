@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -501,8 +502,13 @@ func TestGroupListJSON(t *testing.T) {
 
 	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "group", "ls", dbPath)
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, `"groups": [`)
-	result.requireStdoutContains(t, `"/Personal"`)
+	var got struct {
+		Groups []string `json:"groups"`
+	}
+	result.requireJSONEquals(t, &got)
+	if len(got.Groups) != 1 || got.Groups[0] != "/Personal" {
+		t.Fatalf("groups = %#v, want %#v", got.Groups, []string{"/Personal"})
+	}
 }
 
 func TestEntryShowJSONRedactsPasswordUnlessReveal(t *testing.T) {
@@ -532,13 +538,35 @@ func TestEntryShowJSONRedactsPasswordUnlessReveal(t *testing.T) {
 
 	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "show", dbPath, "/Personal/GitHub")
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, `"password": "[redacted]"`)
-	result.requireStdoutContains(t, `"Environment": "prod"`)
+	var redacted struct {
+		Entry struct {
+			Password     string            `json:"password"`
+			CustomFields map[string]string `json:"custom_fields"`
+		} `json:"entry"`
+	}
+	result.requireJSONEquals(t, &redacted)
+	if redacted.Entry.Password != "[redacted]" {
+		t.Fatalf("password = %q, want %q", redacted.Entry.Password, "[redacted]")
+	}
+	if redacted.Entry.CustomFields["Environment"] != "prod" {
+		t.Fatalf("custom_fields[Environment] = %q, want %q", redacted.Entry.CustomFields["Environment"], "prod")
+	}
 
 	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "show", dbPath, "/Personal/GitHub", "--reveal")
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, `"password": "super-secret"`)
-	result.requireStdoutContains(t, `"Environment": "prod"`)
+	var revealed struct {
+		Entry struct {
+			Password     string            `json:"password"`
+			CustomFields map[string]string `json:"custom_fields"`
+		} `json:"entry"`
+	}
+	result.requireJSONEquals(t, &revealed)
+	if revealed.Entry.Password != "super-secret" {
+		t.Fatalf("password = %q, want %q", revealed.Entry.Password, "super-secret")
+	}
+	if revealed.Entry.CustomFields["Environment"] != "prod" {
+		t.Fatalf("custom_fields[Environment] = %q, want %q", revealed.Entry.CustomFields["Environment"], "prod")
+	}
 }
 
 func TestVersionJSON(t *testing.T) {
@@ -546,11 +574,23 @@ func TestVersionJSON(t *testing.T) {
 
 	result := runKPX(t, t.TempDir(), "", "--json", "version")
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, `"version": "`)
+	var cmdVersion struct {
+		Version string `json:"version"`
+	}
+	result.requireJSONEquals(t, &cmdVersion)
+	if cmdVersion.Version == "" {
+		t.Fatal("version was empty")
+	}
 
 	result = runKPX(t, t.TempDir(), "", "--version", "--json")
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, `"version": "`)
+	var flagVersion struct {
+		Version string `json:"version"`
+	}
+	result.requireJSONEquals(t, &flagVersion)
+	if flagVersion.Version == "" {
+		t.Fatal("version was empty")
+	}
 }
 
 func TestHelpDoesNotExposeCompletionCommand(t *testing.T) {
@@ -584,8 +624,93 @@ func TestEntryPasswordJSON(t *testing.T) {
 
 	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "password", dbPath, "/Personal/GitHub")
 	result.requireSuccess(t)
-	result.requireStdoutContains(t, `"password": "super-secret"`)
-	result.requireStdoutContains(t, `"path": "/Personal/GitHub"`)
+	var got struct {
+		Path     string `json:"path"`
+		Password string `json:"password"`
+	}
+	result.requireJSONEquals(t, &got)
+	if got.Path != "/Personal/GitHub" {
+		t.Fatalf("path = %q, want %q", got.Path, "/Personal/GitHub")
+	}
+	if got.Password != "super-secret" {
+		t.Fatalf("password = %q, want %q", got.Password, "super-secret")
+	}
+}
+
+func TestJSONStatusContracts(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+	exportPath := filepath.Join(tempDir, "paper.txt")
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "db", "create", dbPath, "--name", "Test Vault")
+	result.requireSuccess(t)
+	result.requireStatusJSON(t, "created", "database", dbPath, "", "")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "db", "validate", dbPath)
+	result.requireSuccess(t)
+	result.requireStatusJSON(t, "validated", "database", dbPath, "", "")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "group", "add", dbPath, "/Personal")
+	result.requireSuccess(t)
+	result.requireStatusJSON(t, "created", "group", "/Personal", "", "")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "add", dbPath, "/Personal/GitHub", "--password", "super-secret")
+	result.requireSuccess(t)
+	result.requireStatusJSON(t, "created", "entry", "/Personal/GitHub", "", "")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "edit", dbPath, "/Personal/GitHub", "--notes", "Updated")
+	result.requireSuccess(t)
+	result.requireStatusJSON(t, "updated", "entry", "/Personal/GitHub", "", "")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "export", "paper", dbPath, "--output", exportPath)
+	result.requireSuccess(t)
+	result.requireStatusJSON(t, "exported", "database", "", exportPath, "paper")
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "rm", dbPath, "/Personal/GitHub", "--force")
+	result.requireSuccess(t)
+	result.requireStatusJSON(t, "deleted", "entry", "/Personal/GitHub", "", "")
+}
+
+func TestEntryListAndFindJSONContracts(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "vault.kdbx")
+
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
+	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "entry", "add", dbPath, "/Personal/GitHub", "--password", "super-secret").requireSuccess(t)
+
+	result := runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "entry", "ls", dbPath, "/Personal")
+	result.requireSuccess(t)
+	var list struct {
+		Group   string   `json:"group"`
+		Entries []string `json:"entries"`
+	}
+	result.requireJSONEquals(t, &list)
+	if list.Group != "/Personal" {
+		t.Fatalf("group = %q, want %q", list.Group, "/Personal")
+	}
+	if len(list.Entries) != 1 || list.Entries[0] != "/Personal/GitHub" {
+		t.Fatalf("entries = %#v, want %#v", list.Entries, []string{"/Personal/GitHub"})
+	}
+
+	result = runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "--json", "find", dbPath, "github")
+	result.requireSuccess(t)
+	var find struct {
+		Query   string   `json:"query"`
+		Exact   bool     `json:"exact"`
+		Results []string `json:"results"`
+	}
+	result.requireJSONEquals(t, &find)
+	if find.Query != "github" || find.Exact {
+		t.Fatalf("find = %#v, want query github exact false", find)
+	}
+	if len(find.Results) != 1 || find.Results[0] != "/Personal/GitHub" {
+		t.Fatalf("results = %#v, want %#v", find.Results, []string{"/Personal/GitHub"})
+	}
 }
 
 func TestEntryRemoveRequiresForceWithNoInput(t *testing.T) {
@@ -720,6 +845,29 @@ func (r commandResult) requireStderrContains(t *testing.T, want string) {
 	t.Helper()
 	if !strings.Contains(r.stderr, want) {
 		t.Fatalf("stderr did not contain %q\nstdout:\n%s\nstderr:\n%s", want, r.stdout, r.stderr)
+	}
+}
+
+func (r commandResult) requireJSONEquals(t *testing.T, target any) {
+	t.Helper()
+	decoder := json.NewDecoder(strings.NewReader(r.stdout))
+	if err := decoder.Decode(target); err != nil {
+		t.Fatalf("stdout was not valid JSON: %v\nstdout:\n%s\nstderr:\n%s", err, r.stdout, r.stderr)
+	}
+}
+
+func (r commandResult) requireStatusJSON(t *testing.T, status string, kind string, path string, output string, format string) {
+	t.Helper()
+	var got struct {
+		Status string `json:"status"`
+		Kind   string `json:"kind"`
+		Path   string `json:"path,omitempty"`
+		Output string `json:"output,omitempty"`
+		Format string `json:"format,omitempty"`
+	}
+	r.requireJSONEquals(t, &got)
+	if got.Status != status || got.Kind != kind || got.Path != path || got.Output != output || got.Format != format {
+		t.Fatalf("status json = %#v, want status=%q kind=%q path=%q output=%q format=%q", got, status, kind, path, output, format)
 	}
 }
 

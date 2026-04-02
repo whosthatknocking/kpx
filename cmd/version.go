@@ -14,7 +14,7 @@ func init() {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			if opts.JSON {
-				_ = writeJSON(cmd.OutOrStdout(), map[string]string{"version": buildinfo.String()})
+				_ = writeJSON(cmd.OutOrStdout(), versionView{Version: buildinfo.String()})
 				return
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "kpx %s\n", buildinfo.String())

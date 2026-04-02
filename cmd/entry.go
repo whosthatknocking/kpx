@@ -41,9 +41,9 @@ func init() {
 				for _, entry := range entries {
 					paths = append(paths, entry.Path)
 				}
-				return writeJSON(cmd.OutOrStdout(), map[string]any{
-					"group":   remaining[0],
-					"entries": paths,
+				return writeJSON(cmd.OutOrStdout(), entriesListView{
+					Group:   remaining[0],
+					Entries: paths,
 				})
 			}
 
@@ -85,7 +85,7 @@ func init() {
 			}
 
 			if opts.JSON {
-				return writeJSON(cmd.OutOrStdout(), map[string]any{"entry": entryJSONView(entry, reveal)})
+				return writeJSON(cmd.OutOrStdout(), entryEnvelopeView{Entry: entryJSONView(entry, reveal)})
 			}
 
 			printEntry(cmd.OutOrStdout(), entry, reveal)
@@ -115,9 +115,9 @@ func init() {
 			}
 
 			if opts.JSON {
-				return writeJSON(cmd.OutOrStdout(), map[string]any{
-					"path":     entry.Path,
-					"password": entry.Password,
+				return writeJSON(cmd.OutOrStdout(), entryPasswordView{
+					Path:     entry.Path,
+					Password: entry.Password,
 				})
 			}
 

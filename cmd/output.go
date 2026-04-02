@@ -19,6 +19,34 @@ type entryView struct {
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
 }
 
+type versionView struct {
+	Version string `json:"version"`
+}
+
+type groupsListView struct {
+	Groups []string `json:"groups"`
+}
+
+type entriesListView struct {
+	Group   string   `json:"group"`
+	Entries []string `json:"entries"`
+}
+
+type entryEnvelopeView struct {
+	Entry entryView `json:"entry"`
+}
+
+type entryPasswordView struct {
+	Path     string `json:"path"`
+	Password string `json:"password"`
+}
+
+type findResultsView struct {
+	Query   string   `json:"query"`
+	Exact   bool     `json:"exact"`
+	Results []string `json:"results"`
+}
+
 type statusView struct {
 	Status string `json:"status"`
 	Kind   string `json:"kind,omitempty"`

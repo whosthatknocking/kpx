@@ -230,7 +230,14 @@ JSON output:
 kpx --json entry show ./vault.kdbx /Personal/GitHub
 ```
 
-JSON support is available for the commands listed below, but the output schema may still evolve while the project is in early releases.
+Global flags:
+
+- `-q`, `--quiet`: suppress success output
+- `--json`: emit JSON output when supported by the command
+- `--no-input`: disable interactive prompting
+- `--master-password-stdin`: read the database master password from stdin
+
+JSON support is available for the commands listed below. For the commands documented here, the top-level JSON response shape is part of the supported CLI contract. Future changes should be additive where possible.
 
 Available today:
 
@@ -255,7 +262,26 @@ Path rules:
 - entry paths look like `/Personal/GitHub`
 - the database argument is optional when `~/.kpx/config.yml` defines `default_database`
 - `entry show` uses `reveal` from config unless `--reveal` is explicitly passed
-- `--json` emits machine-readable output for supported commands, but the JSON schema is not guaranteed stable yet
+- `--json` emits machine-readable output for supported commands using the documented response envelopes below
+
+JSON envelopes by command:
+
+- `db create`, `db validate`, `group add`, `entry add`, `entry edit`, `entry rm`, `export paper`
+  Return a status object with `status`, `kind`, and command-specific fields such as `path`, `output`, and `format`.
+- `group ls`
+  Returns `{ "groups": [...] }`.
+- `entry ls`
+  Returns `{ "group": "...", "entries": [...] }`.
+- `entry show`
+  Returns `{ "entry": { ... } }`.
+- `entry password`
+  Returns `{ "path": "...", "password": "..." }`.
+- `find`
+  Returns `{ "query": "...", "exact": false, "results": [...] }`.
+- `version`, `--version`
+  Returns `{ "version": "..." }`.
+
+- `entry show` JSON continues to redact secrets unless `--reveal` is explicitly passed
 - `--master-password-stdin` is the standard flag for reading the database master password from stdin
 - `--entry-password-stdin` is the standard flag for reading an entry password from stdin
 - `--no-input` disables interactive prompts and requires stdin flags or cached credentials for secret input
@@ -269,6 +295,86 @@ printf '%s\n' 'master-password' | ./kpx --no-input --master-password-stdin db va
 printf '%s\n' 'master-password' | ./kpx --no-input --master-password-stdin entry rm ./vault.kdbx /Personal/GitHub --force
 printf '%s\n%s\n' 'master-password' 'entry-password' | ./kpx --no-input --master-password-stdin entry add ./vault.kdbx /Personal/GitLab --entry-password-stdin
 ```
+
+### Command Reference
+
+`db create <database>`
+
+- creates a new `KDBX4` database
+- prompts for a master password unless `--master-password-stdin` is used
+- supports `--name` to set the stored database display name
+
+`db validate [database]`
+
+- verifies that the database can be opened with the supplied password
+- uses `default_database` from config when the database argument is omitted
+
+`group ls [database]`
+
+- lists group paths
+- uses `default_database` from config when the database argument is omitted
+
+`group add [database] <group-path>`
+
+- creates each missing path segment under the requested group path
+- uses `default_database` from config when the database argument is omitted
+
+`entry ls [database] <group-path>`
+
+- lists entries directly under a group
+- JSON output includes the group path plus entry paths
+
+`entry show [database] <entry-path>`
+
+- shows entry details
+- redacts passwords by default
+- supports `--reveal` to show the stored password and protected custom fields
+- uses `reveal` from config unless `--reveal` is explicitly passed
+
+`entry password [database] <entry-path>`
+
+- prints only the entry password
+- useful for piping into other tools
+- JSON output includes `path` and `password`
+
+`entry add [database] <entry-path>`
+
+- creates a new entry at the given path
+- supports `--username`, `--password`, `--url`, `--notes`
+- supports `--entry-password-stdin` for reading the entry password from stdin
+- supports repeated `--field KEY=VALUE` for custom fields
+
+`entry edit [database] <entry-path>`
+
+- updates built-in and custom fields for an existing entry
+- supports `--title`, `--username`, `--password`, `--url`, `--notes`
+- supports `--entry-password-stdin` for reading the replacement password from stdin
+- supports repeated `--set-field KEY=VALUE`
+- supports repeated `--clear-field KEY`
+
+`entry rm [database] <entry-path>`
+
+- deletes an entry
+- prompts for confirmation unless `--force` is provided
+- requires `--force` when `--no-input` is set
+
+`find [database] <query>`
+
+- searches entry titles and full paths
+- supports `--exact` for case-insensitive exact matching instead of substring matching
+
+`export paper [database]`
+
+- writes a plaintext recovery export for printing or secure offline storage
+- requires either `--output <path>` or explicit `--stdout`
+- supports `--group <group-path>` to limit output to a group subtree
+- supports `--entry <entry-path>` to export a single entry
+- `--group` and `--entry` are mutually exclusive
+
+`version`
+
+- prints the current build version
+- `kpx --version` is also supported
 
 ## Security Notes
 

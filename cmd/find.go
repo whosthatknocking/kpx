@@ -30,10 +30,10 @@ func init() {
 				for _, result := range results {
 					paths = append(paths, result.Path)
 				}
-				return writeJSON(cmd.OutOrStdout(), map[string]any{
-					"query":   remaining[0],
-					"exact":   exact,
-					"results": paths,
+				return writeJSON(cmd.OutOrStdout(), findResultsView{
+					Query:   remaining[0],
+					Exact:   exact,
+					Results: paths,
 				})
 			}
 
