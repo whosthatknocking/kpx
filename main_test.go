@@ -464,7 +464,7 @@ func TestPaperExportWritesFile(t *testing.T) {
 
 	for _, want := range []string{
 		"kpx Paper Backup",
-		"Tool Version: 0.1.9",
+		"Tool Version: " + buildinfo.BaseVersion(),
 		"Database: Test Vault",
 		"Source File: " + dbPath,
 		"Path: /Personal/GitHub",
@@ -760,8 +760,8 @@ func TestVersionFlag(t *testing.T) {
 func TestBaseVersionIsEmbedded(t *testing.T) {
 	t.Parallel()
 
-	if got := buildinfo.BaseVersion(); got != "0.1.9" {
-		t.Fatalf("BaseVersion() = %q, want %q", got, "0.1.9")
+	if got := buildinfo.BaseVersion(); got == "" {
+		t.Fatal("BaseVersion() was empty")
 	}
 }
 

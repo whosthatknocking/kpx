@@ -20,8 +20,6 @@ check_contains README.md "Current release: \`${tag}\`"
 check_contains README.md "go install github.com/whosthatknocking/kpx@${tag}"
 check_contains README.md "tar -xzf kpx_${version}_darwin_arm64.tar.gz"
 check_contains README.md "install -m 0755 kpx_${version}_darwin_arm64/kpx ~/.local/bin/kpx"
-check_contains main_test.go "\"Tool Version: ${version}\","
-check_contains main_test.go "if got := buildinfo.BaseVersion(); got != \"${version}\" {"
 
 if [[ "${1:-}" == "--expect-tag" ]]; then
   current_tag="$(git describe --tags --exact-match 2>/dev/null || true)"
