@@ -48,13 +48,9 @@ func (l *FileLock) Close() error {
 
 	err := syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
 	closeErr := l.file.Close()
-	lockPath := l.lockPath
 	l.file = nil
 	l.lockPath = ""
 
-	if closeErr == nil && lockPath != "" {
-		_ = os.Remove(lockPath)
-	}
 	if err != nil {
 		return err
 	}

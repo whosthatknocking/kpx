@@ -234,7 +234,17 @@ Path rules:
 - `--json` emits machine-readable output for supported commands, but the JSON schema is not guaranteed stable yet
 - `--master-password-stdin` is the standard flag for reading the database master password from stdin
 - `--entry-password-stdin` is the standard flag for reading an entry password from stdin
+- `--no-input` disables interactive prompts and requires stdin flags or cached credentials for secret input
+- `entry rm` requires `--force` when `--no-input` is set
 - ambiguous matches fail closed
+
+Non-interactive examples:
+
+```bash
+printf '%s\n' 'master-password' | ./kpx --no-input --master-password-stdin db validate ./vault.kdbx
+printf '%s\n' 'master-password' | ./kpx --no-input --master-password-stdin entry rm ./vault.kdbx /Personal/GitHub --force
+printf '%s\n%s\n' 'master-password' 'entry-password' | ./kpx --no-input --master-password-stdin entry add ./vault.kdbx /Personal/GitLab --entry-password-stdin
+```
 
 ## Security Notes
 
@@ -242,11 +252,12 @@ Path rules:
 - password prompts use the controlling tty and do not echo
 - master password caching is disabled by default
 - when enabled, cached master passwords are stored on disk under `~/.kpx/master-password-cache.yml` with restrictive file permissions and a cooperating file lock
+- cooperating `kpx` processes use a stable adjacent lock file with restrictive permissions to coordinate reads and writes
 - database saves create a backup of the existing file before replacing it
 - save method defaults to temporary-file-then-rename and can be changed to direct write in config
 - cooperating `kpx` processes take advisory locks during database reads and hold an exclusive lock across write operations
 - non-interactive usage supports stdin-based secrets
-- writes are atomic
+- writes are atomic when `save_method` is left at the default `temporary_file`
 - destructive entry deletion requires confirmation unless `--force` is provided
 
 Current limitations:

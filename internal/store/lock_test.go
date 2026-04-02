@@ -5,6 +5,7 @@ package store
 import (
 	"os"
 	"path/filepath"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -95,7 +96,7 @@ func TestSharedLockBlocksWriter(t *testing.T) {
 	}
 }
 
-func TestLockFileIsRemovedAfterClose(t *testing.T) {
+func TestLockFilePersistsAfterClose(t *testing.T) {
 	t.Parallel()
 
 	path := filepath.Join(t.TempDir(), "vault.kdbx")
@@ -114,7 +115,55 @@ func TestLockFileIsRemovedAfterClose(t *testing.T) {
 		t.Fatalf("lock.Close() failed: %v", err)
 	}
 
-	if _, err := os.Stat(lockPath); !os.IsNotExist(err) {
-		t.Fatalf("expected lock file to be removed after close, stat err = %v", err)
+	info, err := os.Stat(lockPath)
+	if err != nil {
+		t.Fatalf("expected lock file to persist after close: %v", err)
+	}
+	if got := info.Mode().Perm(); got != 0o600 {
+		t.Fatalf("lock file mode = %o, want %o", got, 0o600)
+	}
+}
+
+func TestLockReusesStableLockFileInode(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "vault.kdbx")
+	lockPath := filepath.Join(filepath.Dir(path), "."+filepath.Base(path)+".lock")
+
+	first, err := LockExclusive(path)
+	if err != nil {
+		t.Fatalf("LockExclusive() failed: %v", err)
+	}
+
+	statBefore, err := os.Stat(lockPath)
+	if err != nil {
+		t.Fatalf("os.Stat(%s) failed: %v", lockPath, err)
+	}
+
+	if err := first.Close(); err != nil {
+		t.Fatalf("first.Close() failed: %v", err)
+	}
+
+	second, err := LockExclusive(path)
+	if err != nil {
+		t.Fatalf("second LockExclusive() failed: %v", err)
+	}
+	defer second.Close()
+
+	statAfter, err := os.Stat(lockPath)
+	if err != nil {
+		t.Fatalf("os.Stat(%s) after reopen failed: %v", lockPath, err)
+	}
+
+	beforeSys, ok := statBefore.Sys().(*syscall.Stat_t)
+	if !ok {
+		t.Fatalf("unexpected stat type before reopen: %T", statBefore.Sys())
+	}
+	afterSys, ok := statAfter.Sys().(*syscall.Stat_t)
+	if !ok {
+		t.Fatalf("unexpected stat type after reopen: %T", statAfter.Sys())
+	}
+	if beforeSys.Ino != afterSys.Ino {
+		t.Fatalf("lock file inode changed across reopen: before=%d after=%d", beforeSys.Ino, afterSys.Ino)
 	}
 }
