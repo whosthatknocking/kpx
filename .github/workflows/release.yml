@@ -54,7 +54,7 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
       - name: Check release metadata
-        run: ./tools/check_release.sh --expect-tag
+        run: ./scripts/check_release.sh --expect-tag
 
       - name: Run tests
         run: go test ./...

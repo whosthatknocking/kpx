@@ -72,7 +72,7 @@ Keep docs aligned with implementation. If you change command names, flags, confi
   - base version source and version formatting
 - `internal/testcompat/`
   - compatibility tests and KeePassXC fixture handling
-- `tools/gen_bash_completion.go`
+- `scripts/gen_bash_completion.go`
   - completion generation source for `completions/kpx.bash`
 
 ## Non-Negotiable Design Rules

@@ -24,5 +24,5 @@ perl -0pi -e 's|go install github\.com/whosthatknocking/kpx@v[0-9]+\.[0-9]+\.[0-
 perl -0pi -e 's|kpx_[0-9]+\.[0-9]+\.[0-9]+_darwin_arm64\.tar\.gz|kpx_'"${version}"'_darwin_arm64.tar.gz|g' README.md
 perl -0pi -e 's|kpx_[0-9]+\.[0-9]+\.[0-9]+_darwin_arm64/kpx|kpx_'"${version}"'_darwin_arm64/kpx|g' README.md
 
-./tools/check_release.sh
+./scripts/check_release.sh
 echo "updated release version to ${tag}"

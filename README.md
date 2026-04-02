@@ -460,7 +460,7 @@ Create a release:
 
 ```bash
 # 1. Bump the version and update versioned README references in one step
-./tools/bump_version.sh 0.1.10
+./scripts/bump_version.sh 0.1.10
 # 2. Run the test suite
 go test ./...
 # 3. Create and push the matching tag
@@ -468,11 +468,11 @@ git tag v$(tr -d '\n' < internal/buildinfo/VERSION.txt)
 git push origin main --tags
 ```
 
-`./tools/bump_version.sh` updates `internal/buildinfo/VERSION.txt`, refreshes the versioned install examples in `README.md`, and runs the release metadata check.
+`./scripts/bump_version.sh` updates `internal/buildinfo/VERSION.txt`, refreshes the versioned install examples in `README.md`, and runs the release metadata check.
 
 The release metadata check verifies that the current version is aligned across `internal/buildinfo/VERSION.txt` and the versioned references in `README.md`.
 
-Pushing a `v*` tag runs the GitHub release workflow, verifies the tag matches `internal/buildinfo/VERSION.txt`, reruns `./tools/check_release.sh --expect-tag`, runs `go test ./...`, and publishes release archives plus checksums.
+Pushing a `v*` tag runs the GitHub release workflow, verifies the tag matches `internal/buildinfo/VERSION.txt`, reruns `./scripts/check_release.sh --expect-tag`, runs `go test ./...`, and publishes release archives plus checksums.
 Release archives are currently published for macOS and Linux targets only. Windows release packaging is out of scope for now.
 
 Project layout:

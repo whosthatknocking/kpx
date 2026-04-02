@@ -32,7 +32,7 @@ jobs:
       run: go vet ./...
 
     - name: Check release metadata
-      run: ./tools/check_release.sh
+      run: ./scripts/check_release.sh
 
     - name: Test
       run: go test -v ./...
@@ -59,7 +59,7 @@ jobs:
       run: go build -v ./...
 
     - name: Check release metadata
-      run: ./tools/check_release.sh
+      run: ./scripts/check_release.sh
 
     - name: Test
       run: go test -v ./...
