@@ -46,6 +46,23 @@ func TestWriteReadAndExpire(t *testing.T) {
 	}
 }
 
+func TestPathUsesXDGCacheHome(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+
+	xdgCacheHome := filepath.Join(t.TempDir(), "xdg-cache")
+	t.Setenv("XDG_CACHE_HOME", xdgCacheHome)
+
+	got, err := path()
+	if err != nil {
+		t.Fatalf("path() failed: %v", err)
+	}
+
+	want := filepath.Join(xdgCacheHome, "kpx", "master-password-cache.yml")
+	if got != want {
+		t.Fatalf("path() = %q, want %q", got, want)
+	}
+}
+
 func TestDelete(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 

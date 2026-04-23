@@ -7,20 +7,21 @@ import (
 	"time"
 
 	"github.com/whosthatknocking/kpx/internal/store"
+	"github.com/whosthatknocking/kpx/internal/xdg"
 	"gopkg.in/yaml.v3"
 )
 
 const (
-	dirName  = ".kpx"
+	dirName  = "kpx"
 	fileName = "master-password-cache.yml"
 )
 
 func path() (string, error) {
-	home, err := os.UserHomeDir()
+	root, err := xdg.CacheHome()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, dirName, fileName), nil
+	return filepath.Join(root, dirName, fileName), nil
 }
 
 func Read(databasePath string, now time.Time) (string, bool, error) {

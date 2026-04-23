@@ -113,7 +113,7 @@ func resolveDatabasePath(args []string, trailingRequired int) (string, []string,
 			return "", nil, err
 		}
 		if cfg.DefaultDatabase == "" {
-			return "", nil, cli.NewExitError(cli.ExitGeneric, "database path not provided and no default database configured; set default_database in ~/.kpx/config.yml")
+			return "", nil, cli.NewExitError(cli.ExitGeneric, "database path not provided and no default database configured; set default_database in $XDG_CONFIG_HOME/kpx/config.yml or ~/.config/kpx/config.yml")
 		}
 		return cfg.DefaultDatabase, args, nil
 	default:

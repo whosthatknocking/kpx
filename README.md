@@ -36,8 +36,8 @@ Implemented today:
 - list and create groups
 - list, show, add, edit, and delete entries
 - search entries by title
-- store an optional default database in `~/.kpx/config.yml`
-- support optional default `reveal` behavior in `~/.kpx/config.yml`
+- store an optional default database in `$XDG_CONFIG_HOME/kpx/config.yml`
+- support optional default `reveal` behavior in `$XDG_CONFIG_HOME/kpx/config.yml`
 - support optional master password caching for a configured number of seconds
 - back up the database before saving, with configurable destination and filename format
 - omit the database argument for vault commands when a default is configured
@@ -173,7 +173,7 @@ printf '%s\n' 'master-password' | ./kpx --master-password-stdin export paper ./v
 
 ## Configuration
 
-Create `~/.kpx/config.yml`:
+Create `$XDG_CONFIG_HOME/kpx/config.yml` or `~/.config/kpx/config.yml`:
 
 ```yaml
 default_database: /Users/you/vault.kdbx
@@ -185,6 +185,13 @@ save_method: "temporary_file"
 ```
 
 Set `master_password_cache_seconds` to a positive number to cache the master password for that many seconds. The default is `0`, which disables caching.
+
+On Unix-like systems, `kpx` follows the XDG base directory convention:
+
+- config: `$XDG_CONFIG_HOME/kpx/config.yml` or `~/.config/kpx/config.yml` when `XDG_CONFIG_HOME` is unset
+- cache: `$XDG_CACHE_HOME/kpx/master-password-cache.yml` or `~/.cache/kpx/master-password-cache.yml` when `XDG_CACHE_HOME` is unset
+
+For compatibility, `kpx` moves an existing legacy `~/.kpx/config.yml` into the XDG config path the first time it loads config and no XDG config file exists yet.
 
 Leave `backup_directory` empty to store backups alongside the database. The default filename format uses the original database filename plus a UTC timestamp.
 
@@ -260,7 +267,7 @@ Path rules:
 
 - group paths look like `/Personal/Email`
 - entry paths look like `/Personal/GitHub`
-- the database argument is optional when `~/.kpx/config.yml` defines `default_database`
+- the database argument is optional when `$XDG_CONFIG_HOME/kpx/config.yml` or `~/.config/kpx/config.yml` defines `default_database`
 - `entry show` uses `reveal` from config unless `--reveal` is explicitly passed
 - `--json` emits machine-readable output for supported commands using the documented response envelopes below
 
@@ -381,7 +388,7 @@ printf '%s\n%s\n' 'master-password' 'entry-password' | ./kpx --no-input --master
 - secrets are redacted by default
 - password prompts use the controlling tty and do not echo
 - master password caching is disabled by default
-- when enabled, cached master passwords are stored on disk under `~/.kpx/master-password-cache.yml` with restrictive file permissions and a cooperating file lock
+- when enabled, cached master passwords are stored on disk under `$XDG_CACHE_HOME/kpx/master-password-cache.yml` or `~/.cache/kpx/master-password-cache.yml` with restrictive file permissions and a cooperating file lock
 - cooperating `kpx` processes use a stable adjacent lock file with restrictive permissions to coordinate reads and writes
 - database saves create a backup of the existing file before replacing it
 - save method defaults to temporary-file-then-rename and can be changed to direct write in config

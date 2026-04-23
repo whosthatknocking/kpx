@@ -122,7 +122,7 @@ func TestDefaultDatabaseConfig(t *testing.T) {
 
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
-	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	configPath := configPathForTest(tempDir)
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		t.Fatalf("os.MkdirAll() failed: %v", err)
 	}
@@ -229,7 +229,7 @@ func TestEntryShowUsesRevealConfigUnlessFlagOverrides(t *testing.T) {
 		"super-secret",
 	).requireSuccess(t)
 
-	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	configPath := configPathForTest(tempDir)
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		t.Fatalf("os.MkdirAll() failed: %v", err)
 	}
@@ -267,7 +267,7 @@ func TestMasterPasswordCacheUsesConfiguredSeconds(t *testing.T) {
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "group", "add", dbPath, "/Personal").requireSuccess(t)
 
-	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	configPath := configPathForTest(tempDir)
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		t.Fatalf("os.MkdirAll() failed: %v", err)
 	}
@@ -308,7 +308,7 @@ func TestMasterPasswordCacheWorksAcrossCommands(t *testing.T) {
 		"super-secret",
 	).requireSuccess(t)
 
-	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	configPath := configPathForTest(tempDir)
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		t.Fatalf("os.MkdirAll() failed: %v", err)
 	}
@@ -378,7 +378,7 @@ func TestSaveCreatesBackupInConfiguredDirectoryWithConfiguredName(t *testing.T) 
 
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
-	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	configPath := configPathForTest(tempDir)
 	backupDir := filepath.Join(tempDir, "backups")
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		t.Fatalf("os.MkdirAll() failed: %v", err)
@@ -404,7 +404,7 @@ func TestSaveUsesConfiguredDirectWriteMethod(t *testing.T) {
 
 	runKPX(t, tempDir, "hunter2\n", "--master-password-stdin", "db", "create", dbPath).requireSuccess(t)
 
-	configPath := filepath.Join(tempDir, ".kpx", "config.yml")
+	configPath := configPathForTest(tempDir)
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		t.Fatalf("os.MkdirAll() failed: %v", err)
 	}
@@ -794,7 +794,13 @@ func runKPX(t *testing.T, dir string, stdin string, args ...string) commandResul
 	cmdArgs := append([]string{"-test.run=TestHelperProcess", "--"}, args...)
 	cmd := exec.Command(os.Args[0], cmdArgs...)
 	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1", "HOME="+dir)
+	cmd.Env = append(
+		os.Environ(),
+		"GO_WANT_HELPER_PROCESS=1",
+		"HOME="+dir,
+		"XDG_CONFIG_HOME="+filepath.Join(dir, ".config"),
+		"XDG_CACHE_HOME="+filepath.Join(dir, ".cache"),
+	)
 	cmd.Stdin = strings.NewReader(stdin)
 
 	var stdout bytes.Buffer
@@ -818,6 +824,10 @@ func runKPX(t *testing.T, dir string, stdin string, args ...string) commandResul
 	}
 	result.exitCode = exitErr.ExitCode()
 	return result
+}
+
+func configPathForTest(dir string) string {
+	return filepath.Join(dir, ".config", "kpx", "config.yml")
 }
 
 func (r commandResult) requireSuccess(t *testing.T) {

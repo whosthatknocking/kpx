@@ -61,7 +61,7 @@ Keep docs aligned with implementation. If you change command names, flags, confi
   - advisory file locking on Unix-like systems
   - explicit unsupported-platform stub for non-Unix builds
 - `internal/config/`
-  - `~/.kpx/config.yml` load/save behavior
+  - XDG config file load/save behavior
 - `internal/cache/`
   - master password cache persistence and expiry
 - `internal/cli/`
@@ -171,8 +171,8 @@ Common files to update:
 
 - The base release version is stored in `internal/buildinfo/VERSION.txt`.
 - The generated bash completion file lives at `completions/kpx.bash`.
-- The config file is `~/.kpx/config.yml`.
-- The master password cache file is `~/.kpx/master-password-cache.yml`.
+- The config file is `$XDG_CONFIG_HOME/kpx/config.yml` or `~/.config/kpx/config.yml`.
+- The master password cache file is `$XDG_CACHE_HOME/kpx/master-password-cache.yml` or `~/.cache/kpx/master-password-cache.yml`.
 - Non-Unix builds compile with a clear unsupported-platform lock stub; real vault operations are currently intended for Unix-like systems only.
 - Current implemented CLI areas include:
   - `db create`
